@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Εκδρομή" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#F7F3EE" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon512.png" />
+<link rel="icon" href="icon512.png" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<title>Η σημερινή μας εκδρομή</title>
+<style>
+@font-face{font-family:'Serif';font-style:normal;font-weight:500;src:url(data:font/woff2;base64,{{F_MD_GR}}) format('woff2');unicode-range:U+0370-03FF,U+1F00-1FFF;}
+@font-face{font-family:'Serif';font-style:normal;font-weight:500;src:url(data:font/woff2;base64,{{F_MD_LA}}) format('woff2');unicode-range:U+0000-00FF,U+2000-206F,U+20AC,U+2122;}
+@font-face{font-family:'Serif';font-style:italic;font-weight:400;src:url(data:font/woff2;base64,{{F_IT_GR}}) format('woff2');unicode-range:U+0370-03FF,U+1F00-1FFF;}
+@font-face{font-family:'Serif';font-style:italic;font-weight:400;src:url(data:font/woff2;base64,{{F_IT_LA}}) format('woff2');unicode-range:U+0000-00FF,U+2000-206F,U+20AC,U+2122;}
+</style>
+<style>{{LEAFLET_CSS}}</style>
+<style>
+:root{
+  --bg:#F7F3EE; --card:#FFFFFF; --card2:#FBF8F5; --ink:#221B18; --muted:#8A7F78; --line:#ECE4DC;
+  --accent:#A63D55; --accent-2:#7A2E45; --accent-soft:#F7E6E8; --gold:#B8864B;
+  --ok:#2E8B57; --ok-soft:#E3F2E8; --warn:#B7791F; --warn-soft:#FBF0DA; --bad:#C0392B; --bad-soft:#FBE3E0;
+  --blue:#2F7CF6; --shadow:0 1px 2px rgba(60,30,20,.05),0 8px 28px rgba(60,30,20,.08);
+  --serif:'Serif','Iowan Old Style',Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --r:22px;
+}
+html[data-theme="dark"]{
+  --bg:#141011; --card:#1F191A; --card2:#241D1E; --ink:#F4ECE8; --muted:#A3968F; --line:#342A2B;
+  --accent:#E07A90; --accent-2:#F29AAC; --accent-soft:#3A2228; --gold:#D9A765;
+  --ok:#5CC98A; --ok-soft:#1D3326; --warn:#E6B14E; --warn-soft:#3A2F17; --bad:#F07A6A; --bad-soft:#3D1F1B;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
+a{color:inherit}
+#app{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column}
+.topbar{flex:none;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;display:flex;align-items:center;gap:10px;background:var(--bg);z-index:5}
+.topbar .ttl{flex:1;min-width:0}
+.topbar .ttl b{display:block;font-family:var(--serif);font-style:italic;font-weight:400;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .ttl small{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;color:var(--muted);font-size:12.5px;margin-top:3px}
+.topbar .chip{padding:3px 9px;font-size:10.5px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:11.5px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.warn{background:var(--warn-soft);color:var(--warn)} .chip.bad{background:var(--bad-soft);color:var(--bad)}
+.iconbtn{width:44px;height:44px;border-radius:14px;background:var(--card);box-shadow:var(--shadow);display:grid;place-items:center;flex:none}
+.iconbtn svg{width:22px;height:22px}
+main{flex:1;min-height:0;position:relative}
+.tab{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 16px 130px;display:none}
+.tab.on{display:block}
+#tab-map{padding:0;overflow:hidden}
+.tabbar{flex:none;display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(env(safe-area-inset-bottom) + 6px);z-index:6}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--muted);font-size:10.5px;font-weight:600}
+.tabbar button svg{width:24px;height:24px}
+.tabbar button.on{color:var(--accent)}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 76px);z-index:7;background:var(--ink);color:var(--bg);border-radius:999px;padding:14px 22px;font-weight:700;font-size:15px;box-shadow:0 10px 30px rgba(0,0,0,.25);white-space:nowrap;transition:transform .2s}
+.fab:active{transform:translateX(-50%) scale(.96)}
+.fab.hide{display:none}
+
+.clockrow{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:2px 2px 14px}
+.clock{font-family:var(--serif);font-size:58px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.clocklbl{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.wx{background:var(--card);border-radius:16px;padding:8px 12px;box-shadow:var(--shadow);text-align:right;font-size:13px;line-height:1.3}
+.wx b{font-size:17px}
+.wx small{color:var(--muted);display:block}
+
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-bottom:14px}
+.lbl{font-size:11.5px;letter-spacing:.16em;font-weight:800;color:var(--accent);text-transform:uppercase}
+.lbl.mut{color:var(--muted)}
+.now{padding:22px 20px 20px;position:relative;overflow:hidden}
+.now .big{font-family:var(--serif);font-size:36px;line-height:1.08;margin:8px 0 6px;text-transform:uppercase;letter-spacing:.01em}
+.now .act{font-size:17px;color:var(--ink);opacity:.85}
+.now .meta{color:var(--muted);font-size:13.5px;margin-top:10px}
+.now.romantic{background:linear-gradient(160deg,var(--card) 0%,var(--accent-soft) 130%)}
+.now.arrived{background:linear-gradient(160deg,var(--card) 10%,var(--ok-soft) 140%)}
+.now .ribbon{position:absolute;right:-34px;top:20px;transform:rotate(35deg);background:var(--ok);color:#fff;font-size:10px;font-weight:800;letter-spacing:.14em;padding:4px 40px}
+.stats{display:flex;gap:8px;margin:14px 0 4px}
+.stat{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:10px 6px;text-align:center;min-width:0}
+.stat b{display:block;font-family:var(--serif);font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat span{font-size:11px;color:var(--muted);letter-spacing:.08em;font-weight:700}
+.next{display:flex;gap:14px;align-items:flex-start}
+.next .em{font-size:30px;line-height:1;width:48px;height:48px;border-radius:15px;background:var(--accent-soft);display:grid;place-items:center;flex:none}
+.next .nm{font-family:var(--serif);font-size:23px;line-height:1.15}
+.next .tm{font-size:14px;color:var(--muted);margin-top:2px}
+.next .dist{font-size:15px;margin-top:8px;font-weight:600}
+.next .eta{font-size:13.5px;color:var(--muted);margin-top:2px}
+s{color:var(--muted);opacity:.8}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:58px;border-radius:18px;font-weight:800;font-size:16.5px;letter-spacing:.03em;text-decoration:none;transition:transform .15s,opacity .15s;text-align:center;padding:0 14px}
+.btn:active{transform:scale(.98);opacity:.9}
+.btn.pri{background:var(--accent);color:#fff;box-shadow:0 8px 22px rgba(166,61,85,.3)}
+.btn.dark{background:var(--ink);color:var(--bg)}
+.btn.sec{background:var(--card2);border:1px solid var(--line);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--accent);min-height:48px}
+.btn.sm{min-height:48px;font-size:14.5px;border-radius:15px}
+.row{display:flex;gap:10px} .row>*{flex:1}
+.mt{margin-top:12px} .mt2{margin-top:8px}
+.banner{border-radius:18px;padding:13px 15px;margin-bottom:12px;font-size:14px;line-height:1.4;display:flex;gap:10px;align-items:flex-start}
+.banner>div{flex:1;min-width:0}
+.banner b{display:block}
+.banner.warn{background:var(--warn-soft);color:var(--ink)} .banner.bad{background:var(--bad-soft)} .banner.ok{background:var(--ok-soft)} .banner.info{background:var(--card);box-shadow:var(--shadow)} .banner.rom{background:var(--accent-soft)}
+.newplan{margin-top:8px;font-variant-numeric:tabular-nums}
+.newplan div{display:flex;gap:10px;padding:2px 0}
+.newplan div b{width:48px;display:inline}
+
+.mapwrap{height:210px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px;position:relative;background:var(--card2)}
+.mapwrap .mm{position:absolute;inset:0}
+.mapwrap .open{position:absolute;right:10px;bottom:10px;z-index:500;background:var(--card);border-radius:12px;padding:8px 12px;font-size:13px;font-weight:700;box-shadow:var(--shadow)}
+#fullmap{position:absolute;inset:0}
+.mapctl{position:absolute;right:12px;top:12px;z-index:500;display:flex;flex-direction:column;gap:8px}
+.mapcard{position:absolute;left:12px;right:12px;bottom:12px;z-index:500}
+.mapcard .card{margin:0}
+.darktiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6)}
+.lowz .mkl:not(.keep){display:none}
+.leaflet-container{background:var(--card2);font-family:var(--sans)}
+.leaflet-control-attribution{font-size:9px!important;background:rgba(255,255,255,.7)!important}
+html[data-theme="dark"] .leaflet-control-attribution{background:rgba(0,0,0,.5)!important;color:#aaa}
+html[data-theme="dark"] .leaflet-control-attribution a{color:#ccc}
+
+.mk{position:relative;width:40px;height:40px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:var(--card);border:2px solid var(--muted);display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.2)}
+.mk span{transform:rotate(45deg);font-size:19px;line-height:1}
+.mk.done{border-color:var(--ok);opacity:.75}
+.mk.cur{border-color:var(--ok);background:var(--ok-soft)}
+.mk.next{border-color:var(--accent);background:var(--accent);width:48px;height:48px;animation:pulse 2s infinite}
+.mk.skip{opacity:.35;filter:grayscale(1)}
+.mkl{position:absolute;left:20px;top:46px;transform:translateX(-50%);white-space:nowrap;background:var(--card);color:var(--ink);font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(166,61,85,.5)}70%{box-shadow:0 0 0 16px rgba(166,61,85,0)}100%{box-shadow:0 0 0 0 rgba(166,61,85,0)}}
+.me{width:20px;height:20px;border-radius:50%;background:var(--blue);border:3px solid #fff;animation:mepulse 2s infinite}
+@keyframes mepulse{0%{box-shadow:0 0 0 0 rgba(47,124,246,.45)}70%{box-shadow:0 0 0 14px rgba(47,124,246,0)}100%{box-shadow:0 0 0 0 rgba(47,124,246,0)}}
+.pl{width:30px;height:30px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2px solid var(--gold)}
+
+.tl{position:relative}
+.tli{display:flex;gap:12px;align-items:center;padding:9px 0;position:relative;width:100%;text-align:left}
+.tli .dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;flex:none;background:var(--card2);border:2px solid var(--line);color:var(--muted);z-index:1}
+.tli.done .dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.tli.cur .dot{background:var(--accent);border-color:var(--accent);color:#fff}
+.tli.skip{opacity:.45} .tli.skip .nm{text-decoration:line-through}
+.tli .t{width:50px;font-variant-numeric:tabular-nums;font-weight:700;font-size:14px}
+.tli .t s{display:block;font-size:11px;font-weight:500}
+.tli .nm{flex:1;font-size:15px}
+.tli.cur .nm{font-weight:800}
+.tli.done .nm,.tli.done .t{color:var(--muted)}
+.tl:before{content:'';position:absolute;left:14px;top:22px;bottom:22px;width:2px;background:var(--line)}
+.prog{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:12px 0 6px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;transition:width .6s}
+.progtxt{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+
+.pc{padding:0;overflow:hidden}
+.pc .hd{display:flex;gap:14px;padding:16px 16px 12px;align-items:center;width:100%;text-align:left}
+.pc .em{font-size:26px;width:50px;height:50px;border-radius:16px;background:var(--accent-soft);display:grid;place-items:center;flex:none}
+.pc .t{font-family:var(--serif);font-size:22px;font-variant-numeric:tabular-nums}
+.pc .nm{font-weight:800;font-size:16px}
+.pc .ac{color:var(--muted);font-size:13.5px;margin-top:2px}
+.pc .bd{padding:0 16px 16px;font-size:14px;line-height:1.45}
+.pc.done{opacity:.72} .pc.cur{box-shadow:0 0 0 2px var(--accent),var(--shadow)} .pc.skip{opacity:.5}
+.note{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:10px;font-size:13.5px}
+.tag{display:inline-block;font-size:11px;font-family:var(--sans);font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:8px;background:var(--card2);color:var(--muted);margin-left:8px;vertical-align:middle}
+.tag.ok{background:var(--ok-soft);color:var(--ok)} .tag.acc{background:var(--accent-soft);color:var(--accent)}
+.sec-h{font-family:var(--serif);font-size:28px;margin:6px 2px 12px}
+.sub{color:var(--muted);font-size:13.5px;margin:-6px 2px 14px;line-height:1.4}
+
+.cats{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 14px;padding:2px 16px 8px;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat{flex:none;background:var(--card);box-shadow:var(--shadow);border-radius:16px;padding:11px 14px;font-weight:700;font-size:14px;white-space:nowrap}
+.cat.on{background:var(--ink);color:var(--bg)}
+.pli{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.pli:last-child{border-bottom:0}
+.pli .ic{width:42px;height:42px;border-radius:13px;background:var(--card2);display:grid;place-items:center;font-size:20px;flex:none}
+.pli .nm{font-weight:700;font-size:15px}
+.pli .ds{color:var(--muted);font-size:12.5px;margin-top:2px}
+.pli .km{margin-left:auto;font-weight:800;font-size:14px;white-space:nowrap}
+.pli.cur .ic{background:var(--accent-soft)}
+
+.set{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);font-size:15px}
+.set:last-child{border-bottom:0}
+.set .k{flex:1;min-width:0} .set .k small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.35}
+.set select,.set input[type=date],.set input[type=time],.set input[type=text]{font:inherit;font-size:16px;color:var(--ink);background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;max-width:170px}
+.set input[type=text]{max-width:100%;width:100%;margin-top:8px}
+.sw{position:relative;width:52px;height:32px;flex:none}
+.sw input{opacity:0;width:0;height:0}
+.sw i{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:.2s}
+.sw i:before{content:'';position:absolute;width:26px;height:26px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+.sw input:checked+i{background:var(--ok)}
+.sw input:checked+i:before{transform:translateX(20px)}
+.build{text-align:center;color:var(--muted);font-size:11px;margin:18px 0}
+
+#sheet-root{position:fixed;inset:0;z-index:50;pointer-events:none}
+#sheet-root.open{pointer-events:auto}
+.sheet-bg{position:absolute;inset:0;background:rgba(20,10,10,.38);opacity:0;transition:opacity .25s}
+#sheet-root.open .sheet-bg{opacity:1}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:10px 18px calc(env(safe-area-inset-bottom) + 20px);transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+#sheet-root.open .sheet{transform:none}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 14px}
+.sheet h3{font-family:var(--serif);font-weight:500;font-size:26px;margin:4px 0 6px}
+.sheet p{line-height:1.5;font-size:15.5px;margin:8px 0}
+.sheet .opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:15px 4px;border-bottom:1px solid var(--line);font-size:16px;font-weight:600}
+.sheet .opt span{width:30px;font-size:21px;text-align:center}
+.say{white-space:pre-line;font-size:17px!important;line-height:1.55!important}
+
+#toast{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top) + 64px);z-index:60;pointer-events:none;display:flex;justify-content:center}
+#toast div{background:var(--ink);color:var(--bg);border-radius:16px;padding:12px 16px;font-weight:700;font-size:14.5px;box-shadow:0 10px 30px rgba(0,0,0,.25);transform:translateY(-20px);opacity:0;transition:.3s;max-width:420px;text-align:center}
+#toast.on div{transform:none;opacity:1}
+
+#onb{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;justify-content:center;padding:30px 26px calc(env(safe-area-inset-bottom) + 30px);overflow:auto}
+#onb h1{font-family:var(--serif);font-weight:400;font-style:italic;font-size:38px;line-height:1.1;margin:0 0 10px}
+#onb p{font-size:16.5px;line-height:1.55;color:var(--ink);opacity:.85;margin:0}
+#onb .why{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:16px 18px;margin:18px 0 26px;font-size:15px;line-height:1.7}
+.fade{animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.load{color:var(--muted);font-size:14px;display:flex;align-items:center;gap:8px}
+.load:before{content:'';width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{color:var(--bad);font-size:14px}
+.hint{color:var(--muted);font-size:12.5px;line-height:1.45}
+.rom-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.rom-grid button{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px 6px;font-size:13px;font-weight:700;line-height:1.35}
+.rom-grid button b{display:block;font-size:22px;margin-bottom:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="ttl"><b>❤️ Η σημερινή μας εκδρομή</b><small><span id="tb-sub"></span><span id="tb-status"></span></small></div>
+    <button class="iconbtn" data-a="menu" aria-label="Μενού"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </header>
+  <main>
+    <section class="tab on" id="tab-trip">
+      <div id="trip-a"></div>
+      <div class="mapwrap" id="mini-wrap"><div class="mm" id="minimap"></div><button class="open" data-a="tab" data-tab="map">Χάρτης ↗</button></div>
+      <div id="trip-b"></div>
+    </section>
+    <section class="tab" id="tab-map">
+      <div id="fullmap"></div>
+      <div class="mapctl">
+        <button class="iconbtn" data-a="recenter" aria-label="Η θέση μου"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+        <button class="iconbtn" data-a="fitall" aria-label="Όλες οι στάσεις"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+      <div class="mapcard" id="mapcard"></div>
+    </section>
+    <section class="tab" id="tab-plan"><div id="plan"></div></section>
+    <section class="tab" id="tab-nearby"><div id="nearby"></div></section>
+    <section class="tab" id="tab-settings"><div id="settings"></div></section>
+  </main>
+  <nav class="tabbar" id="tabbar">
+    <button data-a="tab" data-tab="trip" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Trip</button>
+    <button data-a="tab" data-tab="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>Χάρτης</button>
+    <button data-a="tab" data-tab="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3"/><circle cx="4.5" cy="12" r="1.3"/><circle cx="4.5" cy="18" r="1.3"/></svg>Πρόγραμμα</button>
+    <button data-a="tab" data-tab="nearby"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-6-5.3-6-11a6 6 0 0 1 12 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></svg>Κοντά</button>
+    <button data-a="tab" data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ρυθμίσεις</button>
+  </nav>
+</div>
+<button class="fab" id="fab" data-a="whatnow">✨ Τι κάνουμε τώρα;</button>
+<div id="sheet-root"></div>
+<div id="toast"><div></div></div>
+
+<script>{{LEAFLET_JS}}</script>
+<script>
+'use strict';
+var BUILD = '{{BUILD_VERSION}}';
+var CFG = { mapboxToken: '{{MAPBOX_TOKEN}}' };
+var TZ = 'Europe/Athens';
+
+// ---------------------------------------------------------------------------
+// ITINERARY — coordinates verified against each place's official Google Maps
+// pin / OpenStreetMap. Destinations are always exact coordinates, never a
+// name search, so navigation can't pick a same-named business elsewhere.
+// ---------------------------------------------------------------------------
+var STOPS = [
+  { id: 'keratsini', name: 'Κερατσίνι', acc: 'το Κερατσίνι', at: 'στο Κερατσίνι', emoji: '🚗', time: '10:00', dur: 0,
+    lat: 37.9622, lng: 23.6197, radius: 400, activity: 'Αναχώρηση', address: 'Κερατσίνι, Αττική' },
+  { id: 'stefani', name: 'Στεφάνι', acc: 'το Στεφάνι', at: 'στο Στεφάνι', emoji: '📍', aemoji: '📸', time: '11:30', dur: 60,
+    lat: 37.752936, lng: 22.8354188, radius: 200, activity: 'Βόλτα & φωτογραφίες',
+    address: 'Ιερός Ναός Αγίου Στεφάνου, Στεφάνι 200 08', plus: 'QR3P+34',
+    info: 'Ορεινό χωριό στα ~840 m, στις πλαγιές της Νυφίτσας. Προορισμός είναι ο Ιερός Ναός Αγίου Στεφάνου (Plus Code QR3P+34).',
+    tip: 'Κάντε μια χαλαρή βόλτα στο χωριό και βγάλτε φωτογραφίες με θέα στα βουνά — ο καθαρός αέρας εδώ πάνω αξίζει.' },
+  { id: 'lunch', name: 'Το Ταβερνάκι του Γαμπρού', acc: 'το Ταβερνάκι του Γαμπρού', at: 'στο Ταβερνάκι του Γαμπρού', emoji: '🍖', time: '13:00', dur: 90,
+    lat: 37.906879, lng: 22.8802402, radius: 70, activity: 'Φαγητό',
+    address: 'Πλατεία Αρχαίας Κορίνθου, Αρχαία Κόρινθος 200 07', phone: '+302741031131', cid: '14380001851965499689',
+    info: 'Παραδοσιακό ψητοπωλείο-ταβερνάκι στην πλατεία, δίπλα στον Ναό του Απόλλωνα. Ο αρχαιολογικός χώρος είναι λίγα μέτρα πιο κάτω — μετά το φαγητό πάτε με τα πόδια.',
+    tip: 'Απολαύστε το φαγητό με την ησυχία σας. Ο αρχαιολογικός χώρος είναι 2-3 λεπτά με τα πόδια, οπότε δεν χρειάζεται να μετακινήσετε το αυτοκίνητο.' },
+  { id: 'corinth', name: 'Αρχαία Κόρινθος', acc: 'την Αρχαία Κόρινθο', at: 'στην Αρχαία Κόρινθο', emoji: '🏛️', time: '15:00', dur: 120,
+    lat: 37.9059, lng: 22.8784, radius: 130, activity: 'Αρχαιολογικός χώρος + Μουσείο',
+    address: 'Αρχαιολογικός Χώρος & Μουσείο Αρχαίας Κορίνθου, 200 07',
+    info: 'Ο αρχαιολογικός χώρος και το Αρχαιολογικό Μουσείο είναι ΜΙΑ στάση: το μουσείο βρίσκεται μέσα στον χώρο, κοντά στην είσοδο, με κοινό εισιτήριο.',
+    warn: 'Ελέγξτε το ωράριο για την ημερομηνία σας — τους χειμερινούς μήνες οι αρχαιολογικοί χώροι συχνά κλείνουν νωρίς το απόγευμα.',
+    tip: 'Ξεκινήστε από το μουσείο και μετά περπατήστε στον χώρο. Ο Ναός του Απόλλωνα είναι το κλασικό σημείο για φωτογραφία. Αν περισσέψει χρόνος, ο Ακροκόρινθος από πάνω έχει φανταστική θέα.' },
+  { id: 'loutraki', name: 'Λουτράκι', acc: 'το Λουτράκι', at: 'στο Λουτράκι', emoji: '☕', aemoji: '🌊', time: '17:00', dur: 150,
+    lat: 37.9744, lng: 22.9777, radius: 800, activity: 'Καφές + παραλιακή βόλτα', romantic: true,
+    address: 'Λουτράκι, Κορινθία',
+    info: 'Το χαλαρό τέλος της ημέρας: καφές στην παραλία και βόλτα στον παραλιακό πεζόδρομο με θέα στον Κορινθιακό.',
+    tip: 'Καφές δίπλα στη θάλασσα και μετά χαλαρή βόλτα στον παραλιακό πεζόδρομο.' }
+];
+var STOP_BY = {};
+STOPS.forEach(function (s) { STOP_BY[s.id] = s; });
+
+var CURATED = [
+  { cats: ['sunset', 'romantic', 'photo'], icon: '🌅', name: 'Φάρος Μελαγκάβι & Ηραίον',
+    lat: 38.02848, lng: 22.85003, note: 'Από τα πιο γνωστά σημεία για ηλιοβασίλεμα στην περιοχή, ~20 km από το Λουτράκι.' },
+  { cats: ['photo', 'sunset'], icon: '🏰', name: 'Ακροκόρινθος',
+    lat: 37.89128, lng: 22.87328, note: 'Κάστρο πάνω από την Αρχαία Κόρινθο με πανοραμική θέα — λίγα λεπτά με το αυτοκίνητο.' }
+];
+
+var CATS = [
+  { id: 'cafe', icon: '☕', label: 'Καφέ', r: 2500, q: ['[cafe]'], f: ['["amenity"="cafe"]'] },
+  { id: 'food', icon: '🍴', label: 'Φαγητό', r: 3000, q: ['[restaurant]', '[fast food]'], f: ['["amenity"~"^(restaurant|fast_food)$"]'] },
+  { id: 'fuel', icon: '⛽', label: 'Βενζίνη', r: 10000, q: ['[fuel]'], f: ['["amenity"="fuel"]'] },
+  { id: 'parking', icon: '🅿️', label: 'Parking', r: 1500, q: ['[parking]'], f: ['["amenity"="parking"]'] },
+  { id: 'toilets', icon: '🚻', label: 'Τουαλέτες', r: 3000, q: ['[toilets]'], f: ['["amenity"="toilets"]'] },
+  { id: 'photo', icon: '📸', label: 'Photo spots', r: 4000, q: ['[viewpoint]', '[attraction]', '[monument]', '[archaeological site]', '[castle]'], f: ['["tourism"~"^(viewpoint|attraction|artwork)$"]', '["historic"~"^(monument|ruins|archaeological_site|castle|memorial)$"]["name"]'] },
+  { id: 'sunset', icon: '🌅', label: 'Sunset', r: 8000, q: ['[viewpoint]', '[beach]', '[lighthouse]'], f: ['["tourism"="viewpoint"]', '["natural"="beach"]["name"]', '["man_made"="lighthouse"]'] },
+  { id: 'romantic', icon: '❤️', label: 'Ρομαντικά', r: 3000, q: ['[bar]', '[viewpoint]', '[beach]'], f: ['["amenity"~"^(bar|pub)$"]', '["amenity"="cafe"]["outdoor_seating"="yes"]', '["tourism"="viewpoint"]', '["cuisine"~"wine|cocktail"]'] }
+];
+var CAT_BY = {};
+CATS.forEach(function (c) { CAT_BY[c.id] = c; });
+var OVERPASS = ['https://overpass-api.de/api/interpreter'];
+
+// ---------------------------------------------------------------------------
+// Storage (never throws — private mode / full storage must not break the app)
+// ---------------------------------------------------------------------------
+var store = {
+  get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+var KEY = 'trip.state.v1';
+
+// ---------------------------------------------------------------------------
+// Time — everything pinned to Europe/Athens
+// ---------------------------------------------------------------------------
+var FMT = new Intl.DateTimeFormat('en-GB', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+function parts(ms) {
+  var o = {};
+  FMT.formatToParts(new Date(ms)).forEach(function (p) { o[p.type] = p.value; });
+  return { y: +o.year, m: +o.month, d: +o.day, h: +o.hour % 24, mi: +o.minute, s: +o.second };
+}
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function dateStr(ms) { var p = parts(ms); return p.y + '-' + pad(p.m) + '-' + pad(p.d); }
+function hm(ms) { var p = parts(ms); return pad(p.h) + ':' + pad(p.mi); }
+function athensMs(ds, hhmm) {
+  var a = ds.split('-').map(Number), b = hhmm.split(':').map(Number);
+  var want = Date.UTC(a[0], a[1] - 1, a[2], b[0], b[1]);
+  var g = want;
+  for (var i = 0; i < 3; i++) {
+    var p = parts(g);
+    g += want - Date.UTC(p.y, p.m - 1, p.d, p.h, p.mi);
+  }
+  return g;
+}
+var MONTHS = ['Ιανουαρίου', 'Φεβρουαρίου', 'Μαρτίου', 'Απριλίου', 'Μαΐου', 'Ιουνίου', 'Ιουλίου', 'Αυγούστου', 'Σεπτεμβρίου', 'Οκτωβρίου', 'Νοεμβρίου', 'Δεκεμβρίου'];
+var DAYS = ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'];
+function prettyDate(ds) {
+  var a = ds.split('-').map(Number);
+  var wd = new Date(Date.UTC(a[0], a[1] - 1, a[2], 12)).getUTCDay();
+  return DAYS[wd] + ' ' + a[2] + ' ' + MONTHS[a[1] - 1];
+}
+function daysBetween(a, b) {
+  var x = a.split('-').map(Number), y = b.split('-').map(Number);
+  return Math.round((Date.UTC(y[0], y[1] - 1, y[2]) - Date.UTC(x[0], x[1] - 1, x[2])) / 86400000);
+}
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+function defaultState() {
+  return {
+    v: 1, tripDate: dateStr(Date.now()), started: null, finished: null,
+    order: STOPS.map(function (s) { return s.id; }), stops: {}, notified: {},
+    onboarded: false, geoAsked: false, arrival: null, dismissed: null,
+    settings: { notif: false, weather: true, map: 'osm', nav: 'google', theme: 'auto', units: 'km', token: '', wake: true },
+    sim: { on: false, offset: 0, loc: null, tap: false }
+  };
+}
+var S = (function () {
+  var d = defaultState(), s = store.get(KEY, null);
+  if (!s) return d;
+  var m = Object.assign(d, s);
+  m.settings = Object.assign(defaultState().settings, s.settings || {});
+  m.sim = Object.assign(defaultState().sim, s.sim || {});
+  if (m.settings.map === 'carto') m.settings.map = 'osm'; // CARTO now requires an API key
+  // keep order valid if the itinerary definition changed between versions
+  var valid = (m.order || []).filter(function (id) { return STOP_BY[id]; });
+  STOPS.forEach(function (x, i) { if (valid.indexOf(x.id) < 0) valid.splice(i, 0, x.id); });
+  m.order = valid;
+  return m;
+})();
+function save() { store.set(KEY, S); }
+function st(id) { return S.stops[id] || (S.stops[id] = {}); }
+function now() { return Date.now() + (S.sim.on ? (S.sim.offset || 0) : 0); }
+function token() { return (S.settings.token || CFG.mapboxToken || '').trim(); }
+
+var ui = { tab: 'trip', near: { cat: 'cafe', ref: null }, whatnowOpen: false, lastPlaces: [] };
+var pos = null, geo = { status: 'idle', err: null, watch: null };
+var online = navigator.onLine !== false;
+var route = { live: null, loading: false, err: null, lastReq: 0 };
+var legs = store.get('trip.legs.v1', null);
+var wx = store.get('trip.wx.v1', null);
+var placesCache = {};
+var hits = { arrive: 0, depart: 0 };
+
+// ---------------------------------------------------------------------------
+// Geometry & formatting
+// ---------------------------------------------------------------------------
+function hv(a, b) {
+  var R = 6371000, toR = Math.PI / 180;
+  var dLat = (b.lat - a.lat) * toR, dLng = (b.lng - a.lng) * toR;
+  var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * toR) * Math.cos(b.lat * toR) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function fmtDist(m) {
+  if (S.settings.units === 'mi') {
+    var mi = m / 1609.34;
+    return mi < 0.2 ? Math.round(m * 3.281 / 10) * 10 + ' ft' : (mi < 10 ? mi.toFixed(1) : Math.round(mi)) + ' mi';
+  }
+  if (m < 1000) return Math.max(10, Math.round(m / 10) * 10) + ' m';
+  return (m < 10000 ? (m / 1000).toFixed(1) : Math.round(m / 1000)) + ' km';
+}
+function fmtDur(sec) {
+  var m = Math.max(1, Math.round(sec / 60));
+  if (m < 60) return m + ' min';
+  return Math.floor(m / 60) + ' ώ' + (m % 60 ? ' ' + (m % 60) + '′' : '');
+}
+function fmtMins(min) {
+  min = Math.round(min);
+  if (min < 60) return min + (min === 1 ? ' λεπτό' : ' λεπτά');
+  var h = Math.floor(min / 60), r = min % 60;
+  return (h === 1 ? '1 ώρα' : h + ' ώρες') + (r ? ' και ' + r + ' λεπτά' : '');
+}
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+var WALK = 800; // below this distance a leg is walked, not driven
+function walkSec(m) { return m * 1.3 / (4.5 / 3.6); }
+
+// ---------------------------------------------------------------------------
+// Trip logic: where are we, what's next, projected times
+// ---------------------------------------------------------------------------
+function activeOrder() { return S.order.filter(function (id) { return !st(id).skipped; }); }
+function derive() {
+  var ord = activeOrder(), t = now(), d = { ord: ord, t: t };
+  d.today = S.tripDate === dateStr(t);
+  if (!S.started) { d.phase = 'pre'; d.cur = ord[0]; d.target = ord[1] || null; d.visited = 0; return d; }
+  var k = 0;
+  while (k < ord.length && st(ord[k]).arrivedAt) k++;
+  d.visited = k;
+  d.cur = ord[Math.max(0, k - 1)];
+  d.target = ord[k] || null;
+  if (!d.target) d.phase = st(d.cur).departedAt || S.finished ? 'done' : 'at';
+  else d.phase = st(d.cur).departedAt ? 'enroute' : 'at';
+  return d;
+}
+function legInfo(a, b) {
+  var A = STOP_BY[a], B = STOP_BY[b], straight = hv(A, B);
+  if (straight < WALK) return { dist: straight * 1.3, dur: walkSec(straight), walk: true, est: false };
+  var L = legs && legs.map && legs.map[a + '>' + b];
+  if (L) return { dist: L.distance, dur: L.duration, est: false };
+  var road = straight * 1.35;
+  return { dist: road, dur: road / (60 / 3.6), est: true };
+}
+function liveFor(id) {
+  var L = route.live;
+  return L && L.to === id && Date.now() - L.at < 10 * 60000 ? L : null;
+}
+// Projected arrival (pa) / departure (pd) per stop. Never earlier than the
+// planned time (you don't show up early for lunch), so early slack absorbs
+// delays and a late start compresses naturally instead of shifting everything.
+function project(d) {
+  var t = d.t, out = {}, prevDep = null, prev = null;
+  d.ord.forEach(function (id, i) {
+    var s = STOP_BY[id], x = st(id), P = athensMs(S.tripDate, s.time), pa, pd, est = false, live = false;
+    var stay = (s.dur + (x.extra || 0)) * 60000;
+    if (i === 0) {
+      pa = P;
+      var planDep = P + (x.extra || 0) * 60000;
+      pd = S.started ? x.departedAt : (d.today ? Math.max(planDep, t) : planDep);
+    } else {
+      if (x.arrivedAt) pa = x.arrivedAt;
+      else {
+        var L = legInfo(prev, id);
+        est = L.est;
+        if (S.started && st(prev).departedAt && id === d.target) {
+          var lv = liveFor(id);
+          if (lv) { pa = t + lv.duration * 1000; live = true; est = false; }
+          else pa = Math.max(t, prevDep + L.dur * 1000);
+        } else pa = Math.max(P, prevDep + L.dur * 1000);
+      }
+      if (x.departedAt) pd = x.departedAt;
+      else if (x.arrivedAt) pd = Math.max(x.arrivedAt + stay, t);
+      else pd = pa + stay;
+    }
+    out[id] = { P: P, pa: pa, pd: pd, est: est, live: live };
+    prevDep = pd; prev = id;
+  });
+  return out;
+}
+function delayMin(d, pr) {
+  if (!d.today && !S.started) return 0;
+  if (d.phase === 'done') return 0;
+  var ref = d.target || d.cur;
+  if (!pr[ref]) return 0;
+  return Math.round((pr[ref].pa - pr[ref].P) / 60000);
+}
+function statusChip(dl) {
+  if (dl <= 5) return '<span class="chip ok">● ON TIME</span>';
+  if (dl <= 20) return '<span class="chip warn">● ' + dl + ' MIN BEHIND</span>';
+  return '<span class="chip bad">● ' + dl + ' MIN BEHIND</span>';
+}
+function isRomantic(d) {
+  return !!STOP_BY[d.cur] && STOP_BY[d.cur].romantic && (d.phase === 'at' || d.phase === 'done');
+}
+
+function markArrived(id, how) {
+  var t = now(), x = st(id);
+  if (x.arrivedAt) return;
+  x.arrivedAt = t;
+  x.how = how;
+  S.arrival = { id: id, at: t };
+  hits.arrive = 0; hits.depart = 0;
+  save();
+  var s = STOP_BY[id];
+  if (how !== 'start') {
+    try { navigator.vibrate && navigator.vibrate([60, 60, 120]); } catch (e) {}
+    notify('arr:' + id, '🎉 Φτάσατε', s.emoji + ' ' + s.name + ' — ' + s.activity);
+  }
+  route.live = null;
+  render(true);
+  maybeRoute(true);
+  updateMaps();
+}
+function markDeparted(id) {
+  var x = st(id);
+  if (!x.departedAt) { x.departedAt = now(); save(); }
+  hits.arrive = 0; hits.depart = 0;
+}
+
+function startTrip(atId) {
+  var t = now();
+  if (S.tripDate !== dateStr(t)) { S.tripDate = dateStr(t); wx = null; fetchWeather(true); }
+  S.started = t; S.finished = null;
+  var k = st(S.order[0]);
+  k.arrivedAt = t; k.departedAt = t;
+  save();
+  if (atId && atId !== S.order[0]) {
+    // started late and already at a later stop: skip everything before it
+    var ord = activeOrder();
+    for (var i = 1; i < ord.length && ord[i] !== atId; i++) st(ord[i]).skipped = true;
+    save();
+    fetchLegs(true);
+    markArrived(atId, 'start');
+  }
+  requestWake();
+  toast('🚗 Καλό ταξίδι!');
+  maybeRoute(true);
+  render(true);
+  updateMaps();
+}
+
+// Arrival / departure detection from GPS
+function detect() {
+  var p = curPos();
+  if (!S.started || S.finished || !p || p.acc > 150) return;
+  var d = derive();
+  if (d.phase === 'enroute' && d.target) {
+    var T = STOP_BY[d.target];
+    if (hv(p, T) <= T.radius + Math.min(p.acc, 50)) {
+      hits.arrive++;
+      if (hits.arrive >= 2 || p.sim) markArrived(d.target, 'auto');
+    } else hits.arrive = 0;
+  } else if (d.phase === 'at' && d.target) {
+    var C = STOP_BY[d.cur], N = STOP_BY[d.target];
+    var dC = hv(p, C), dN = hv(p, N), pr = project(d);
+    var nearPair = hv(C, N) < 1200;
+    if (dN <= N.radius && dN + 30 < dC &&
+        (d.t >= pr[d.target].pa - 25 * 60000 || d.t - st(d.cur).arrivedAt >= 45 * 60000)) {
+      // neighbouring stops (taverna → archaeological site on foot): arrive at
+      // the next one when clearly there and it's about time
+      markDeparted(d.cur);
+      markArrived(d.target, 'auto');
+    } else if (dC > (nearPair ? C.radius + 150 : Math.max(400, C.radius + 250)) && !(nearPair && dN <= N.radius + 150)) {
+      hits.depart++;
+      if (hits.depart >= 2 || p.sim) {
+        markDeparted(d.cur);
+        toast((hv(C, N) < WALK ? '🚶 ' : '🚗 ') + 'Καθ\' οδόν προς ' + N.acc);
+        route.live = null; maybeRoute(true); render(true); updateMaps();
+      }
+    } else hits.depart = 0;
+  }
+}
+function suggestion(d) {
+  // "Looks like you're at X" when GPS says we're at a stop the trip doesn't expect
+  var p = curPos();
+  if (!p || p.acc > 150 || d.phase === 'done' || S.finished) return null;
+  var ord = d.ord, from = d.phase === 'pre' ? 1 : d.visited;
+  for (var i = from; i < ord.length; i++) {
+    var s = STOP_BY[ord[i]];
+    if (hv(p, s) <= s.radius) {
+      if (d.phase === 'pre') return { id: s.id, pre: true };
+      if (i === d.visited) return null; // the expected next stop: detect() handles it
+      return { id: s.id };
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Location
+// ---------------------------------------------------------------------------
+function curPos() {
+  if (S.sim.on && S.sim.loc) return { lat: S.sim.loc.lat, lng: S.sim.loc.lng, acc: 10, at: Date.now(), sim: true };
+  return pos;
+}
+function startGeo() {
+  if (!('geolocation' in navigator)) { geo.status = 'error'; geo.err = 'unsupported'; render(true); return; }
+  if (geo.watch != null) return;
+  geo.status = 'locating';
+  S.geoAsked = true; save();
+  geo.watch = navigator.geolocation.watchPosition(function (p) {
+    pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, at: Date.now() };
+    var first = geo.status !== 'ok';
+    geo.status = 'ok'; geo.err = null;
+    store.set('trip.lastpos', pos);
+    detect(); maybeRoute(false); render(first); updateMaps();
+  }, function (e) {
+    geo.err = e.code === 1 ? 'denied' : (e.code === 3 ? 'timeout' : 'unavailable');
+    if (!pos || e.code === 1) geo.status = 'error';
+    if (e.code === 1) { try { navigator.geolocation.clearWatch(geo.watch); } catch (x) {} geo.watch = null; }
+    render(true);
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 25000 });
+}
+function initGeo() {
+  if (!S.geoAsked) return;
+  // Only auto-start the watch if the user already agreed once.
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'geolocation' }).then(function (r) {
+      if (r.state !== 'denied') startGeo(); else { geo.status = 'error'; geo.err = 'denied'; render(true); }
+    }).catch(startGeo);
+  } else startGeo();
+}
+
+// ---------------------------------------------------------------------------
+// Routing: OSRM (free, no key, no live traffic) or Mapbox driving-traffic
+// ---------------------------------------------------------------------------
+function withTimeout(p, ms) {
+  return Promise.race([p, new Promise(function (_, rej) { setTimeout(function () { rej(new Error('timeout')); }, ms); })]);
+}
+function fetchJSON(url, opt, ms) {
+  return withTimeout(fetch(url, opt).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }), ms || 15000);
+}
+function routeReq(points) {
+  var coords = points.map(function (p) { return (+p.lng).toFixed(6) + ',' + (+p.lat).toFixed(6); }).join(';');
+  var tk = token();
+  var osrm = function () {
+    return fetchJSON('https://router.project-osrm.org/route/v1/driving/' + coords + '?overview=full&geometries=geojson', {}, 15000).then(function (j) {
+      if (j.code !== 'Ok' || !j.routes || !j.routes[0]) throw new Error('no route');
+      return { r: j.routes[0], provider: 'osrm' };
+    });
+  };
+  if (!tk) return osrm();
+  return fetchJSON('https://api.mapbox.com/directions/v5/mapbox/driving-traffic/' + coords + '?overview=full&geometries=geojson&access_token=' + encodeURIComponent(tk), {}, 15000).then(function (j) {
+    if (!j.routes || !j.routes[0]) throw new Error('no route');
+    return { r: j.routes[0], provider: 'mapbox' };
+  }).catch(osrm);
+}
+function maybeRoute(force) {
+  var d = derive(), to = d.target, p = curPos();
+  if (!to || !p || d.phase === 'done') return;
+  var T = STOP_BY[to];
+  var straight = hv(p, T);
+  if (straight < WALK) {
+    // short hop — walking estimate, no API needed
+    route.live = { to: to, from: p, at: Date.now(), distance: straight * 1.3, duration: walkSec(straight), walk: true, geometry: [[p.lat, p.lng], [T.lat, T.lng]], provider: 'walk' };
+    route.err = null;
+    return;
+  }
+  if (!online) return;
+  var L = route.live, t = Date.now();
+  var moveLimit = d.phase === 'enroute' ? 150 : 400, ageLimit = d.phase === 'enroute' ? 60000 : 300000;
+  var need = force || !L || L.to !== to || L.walk || hv(L.from, p) > moveLimit || t - L.at > ageLimit;
+  if (!need || route.loading) return;
+  if (!force && t - route.lastReq < 10000) return;
+  route.loading = true; route.lastReq = t;
+  routeReq([p, T]).then(function (res) {
+    var r = res.r;
+    route.live = {
+      to: to, from: p, at: Date.now(), distance: r.distance, duration: r.duration,
+      typical: r.duration_typical || null, provider: res.provider,
+      geometry: r.geometry.coordinates.map(function (c) { return [c[1], c[0]]; })
+    };
+    route.err = null;
+    var dd = derive();
+    if (dd.phase === 'enroute' && dd.target === to) notify('eta:' + to, STOP_BY[to].emoji + ' ' + STOP_BY[to].name, 'Είναι περίπου ' + Math.round(r.duration / 60) + ' λεπτά μακριά.');
+  }).catch(function (e) {
+    route.err = e.message || 'error';
+  }).then(function () { route.loading = false; render(); updateMaps(); });
+}
+function fetchLegs(force) {
+  var ord = activeOrder();
+  var key = ord.join('|');
+  if (!force && legs && legs.key === key && Date.now() - legs.at < 6 * 3600000) return;
+  if (!online) return;
+  routeReq(ord.map(function (id) { return STOP_BY[id]; })).then(function (res) {
+    var map = {};
+    res.r.legs.forEach(function (lg, i) { map[ord[i] + '>' + ord[i + 1]] = { distance: lg.distance, duration: lg.duration }; });
+    legs = { key: key, at: Date.now(), map: map, provider: res.provider, geom: res.r.geometry.coordinates.map(function (c) { return [+c[1].toFixed(5), +c[0].toFixed(5)]; }) };
+    store.set('trip.legs.v1', legs);
+    render(); updateMaps();
+  }).catch(function () {});
+}
+
+// ---------------------------------------------------------------------------
+// Weather (Open-Meteo, no key)
+// ---------------------------------------------------------------------------
+function WMO(c) {
+  if (c === 0) return ['☀️', 'Αίθριος'];
+  if (c === 1) return ['🌤️', 'Κυρίως αίθριος'];
+  if (c === 2) return ['⛅', 'Λίγα σύννεφα'];
+  if (c === 3) return ['☁️', 'Συννεφιά'];
+  if (c === 45 || c === 48) return ['🌫️', 'Ομίχλη'];
+  if (c >= 51 && c <= 57) return ['🌦️', 'Ψιχάλες'];
+  if (c >= 61 && c <= 67) return ['🌧️', 'Βροχή'];
+  if (c >= 71 && c <= 77) return ['🌨️', 'Χιόνι'];
+  if (c >= 80 && c <= 82) return ['🌦️', 'Μπόρες'];
+  if (c >= 95) return ['⛈️', 'Καταιγίδα'];
+  return ['🌡️', ''];
+}
+function fetchWeather(force) {
+  if (!S.settings.weather || !online) return;
+  if (!force && wx && wx.date === S.tripDate && Date.now() - wx.at < 3600000) return;
+  var ahead = daysBetween(dateStr(Date.now()), S.tripDate);
+  if (ahead > 15 || ahead < -1) return;
+  var lats = STOPS.map(function (s) { return s.lat.toFixed(4); }).join(','), lngs = STOPS.map(function (s) { return s.lng.toFixed(4); }).join(',');
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lats + '&longitude=' + lngs +
+    '&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m&daily=sunset&timezone=Europe%2FAthens&start_date=' + S.tripDate + '&end_date=' + S.tripDate;
+  var forDate = S.tripDate;
+  fetchJSON(url, {}, 15000).then(function (j) {
+    var arr = Array.isArray(j) ? j : [j], per = {};
+    arr.forEach(function (w, i) {
+      per[STOPS[i].id] = { time: w.hourly.time, t: w.hourly.temperature_2m, p: w.hourly.precipitation_probability, c: w.hourly.weather_code, w: w.hourly.wind_speed_10m, sunset: w.daily && w.daily.sunset && w.daily.sunset[0] };
+    });
+    wx = { date: forDate, at: Date.now(), per: per };
+    store.set('trip.wx.v1', wx);
+    render(true);
+  }).catch(function () {});
+}
+function wxAt(id, ms) {
+  if (!S.settings.weather || !wx || !wx.per || wx.date !== S.tripDate || !wx.per[id]) return null;
+  var W = wx.per[id], h = parts(ms).h, ds = dateStr(ms);
+  if (ds !== S.tripDate) h = ds < S.tripDate ? 0 : 23;
+  var i = W.time.indexOf(S.tripDate + 'T' + pad(h) + ':00');
+  if (i < 0) return null;
+  var m = WMO(W.c[i]);
+  return { temp: Math.round(W.t[i]), rain: W.p[i] == null ? 0 : W.p[i], wind: Math.round(W.w[i]), icon: m[0], text: m[1], hour: pad(h) + ':00' };
+}
+function sunsetMs() {
+  var W = wx && wx.per && wx.date === S.tripDate && wx.per.loutraki;
+  if (!W || !W.sunset) return null;
+  return athensMs(S.tripDate, W.sunset.slice(11, 16));
+}
+
+// ---------------------------------------------------------------------------
+// Nearby places (OpenStreetMap / Overpass, no key)
+// ---------------------------------------------------------------------------
+function nearRef(d) {
+  if (ui.near.ref) return ui.near.ref;
+  var p = curPos();
+  if (p) return { lat: p.lat, lng: p.lng, label: 'κοντά σας', gps: true };
+  var id = d.phase === 'enroute' || d.phase === 'pre' ? d.target : d.cur;
+  var s = STOP_BY[id || STOPS[1].id];
+  return { lat: s.lat, lng: s.lng, label: 'κοντά ' + s.at };
+}
+// Primary: Nominatim category search inside a bounding box (fast, CORS, no key;
+// max 1 request/second, so a category's phrases are fetched one after another).
+// Fallback: Overpass, which is more complete but its public servers are often overloaded.
+function nominatim(phrase, ref, r) {
+  var dl = r / 111000, dg = r / (111000 * Math.cos(ref.lat * Math.PI / 180));
+  var vb = [ref.lng - dg, ref.lat + dl, ref.lng + dg, ref.lat - dl].map(function (x) { return x.toFixed(4); }).join(',');
+  return fetchJSON('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=40&bounded=1&extratags=1&accept-language=el&q=' + encodeURIComponent(phrase) + '&viewbox=' + vb, {}, 12000);
+}
+function overpass(q) {
+  return fetchJSON(OVERPASS[0], { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'data=' + encodeURIComponent(q) }, 15000);
+}
+var TYPE_LBL = { cafe: 'Καφέ', restaurant: 'Εστιατόριο', fast_food: 'Γρήγορο φαγητό', fuel: 'Βενζινάδικο', parking: 'Parking', toilets: 'Τουαλέτες', bar: 'Bar', pub: 'Pub', viewpoint: 'Θέα', attraction: 'Αξιοθέατο', artwork: 'Έργο τέχνης', beach: 'Παραλία', lighthouse: 'Φάρος', monument: 'Μνημείο', ruins: 'Ερείπια', archaeological_site: 'Αρχαιολογικός χώρος', castle: 'Κάστρο', memorial: 'Μνημείο' };
+var NAMED_ONLY = { romantic: 1, photo: 1, cafe: 1, food: 1 };
+function addPlace(c, cat, ref, lat, lng, type, name, tg) {
+  lat = +lat; lng = +lng;
+  if (!lat || !lng) return;
+  tg = tg || {};
+  if (!name && NAMED_ONLY[cat]) return;
+  var dk = Math.round(lat * 3000) + ':' + Math.round(lng * 3000);
+  if (c.seen[dk]) return;
+  c.seen[dk] = 1;
+  var extra = [];
+  if (tg.fee === 'no') extra.push('δωρεάν');
+  if (tg.fee === 'yes') extra.push('με χρέωση');
+  if (tg.outdoor_seating === 'yes') extra.push('έξω τραπέζια');
+  if (tg.opening_hours) extra.push(tg.opening_hours.length > 30 ? tg.opening_hours.slice(0, 30) + '…' : tg.opening_hours);
+  c.all.push({ name: name || (TYPE_LBL[type] || 'Σημείο'), type: TYPE_LBL[type] || '', lat: lat, lng: lng, extra: extra.join(' · '), d: hv(ref, { lat: lat, lng: lng }) });
+}
+function finishPlaces(c) {
+  c.all.sort(function (a, b) { return a.d - b.d; });
+  c.items = c.all.slice(0, 30);
+}
+function loadPlaces(cat, ref) {
+  var C = CAT_BY[cat];
+  var k = cat + '@' + ref.lat.toFixed(3) + ',' + ref.lng.toFixed(3);
+  var c = placesCache[k];
+  if (c && (c.loading || (c.items && !c.err && Date.now() - c.at < 10 * 60000))) return c;
+  placesCache[k] = c = { loading: true, all: [], seen: {} };
+  if (!online) { c.loading = false; c.err = 'offline'; return c; }
+  var ok = 0, i = 0;
+  function step() {
+    if (i >= C.q.length) return Promise.resolve();
+    var ph = C.q[i++];
+    return nominatim(ph, ref, C.r).then(function (arr) {
+      ok++;
+      (arr || []).forEach(function (e) { addPlace(c, cat, ref, e.lat, e.lon, e.type, e.name, e.extratags); });
+      finishPlaces(c);
+      render(true);
+    }).catch(function () {}).then(function () {
+      return i < C.q.length ? new Promise(function (r) { setTimeout(r, 1100); }).then(step) : null;
+    });
+  }
+  step().then(function () {
+    if (ok) return;
+    var q = '[out:json][timeout:15];(' + C.f.map(function (f) { return 'nwr' + f + '(around:' + C.r + ',' + ref.lat + ',' + ref.lng + ');'; }).join('') + ');out center tags 120;';
+    return overpass(q).then(function (j) {
+      (j.elements || []).forEach(function (e) {
+        var tg = e.tags || {};
+        addPlace(c, cat, ref, e.lat || (e.center && e.center.lat), e.lon || (e.center && e.center.lon),
+          tg.amenity || tg.tourism || tg.historic || tg.natural || tg.man_made || '', tg['name:el'] || tg.name || tg.brand || '', tg);
+      });
+      finishPlaces(c);
+      ok = 1;
+    }).catch(function () {});
+  }).then(function () {
+    c.loading = false; c.at = Date.now();
+    c.err = ok ? null : 'fail';
+    if (!c.items) c.items = [];
+    render(true); updateMaps();
+  });
+  return c;
+}
+function curatedFor(cat, ref) {
+  return CURATED.filter(function (x) { return x.cats.indexOf(cat) >= 0 && hv(ref, x) < 30000; }).map(function (x) {
+    return { name: x.name, type: 'Πρόταση', lat: x.lat, lng: x.lng, extra: x.note, d: hv(ref, x), icon: x.icon, cur: true };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Navigation deep links — always exact coordinates, never a name search
+// ---------------------------------------------------------------------------
+function navUrl(p, walk) {
+  var ll = (+p.lat).toFixed(6) + ',' + (+p.lng).toFixed(6);
+  var n = S.settings.nav;
+  if (n === 'apple') return 'https://maps.apple.com/?daddr=' + ll + '&dirflg=' + (walk ? 'w' : 'd');
+  if (n === 'waze') return 'https://waze.com/ul?ll=' + ll + '&navigate=yes';
+  return 'https://www.google.com/maps/dir/?api=1&destination=' + ll + '&travelmode=' + (walk ? 'walking' : 'driving') + '&dir_action=navigate';
+}
+function navName() { return { google: 'GOOGLE MAPS', apple: 'APPLE MAPS', waze: 'WAZE' }[S.settings.nav] || 'GOOGLE MAPS'; }
+function navBtn(p, cls, label, walk) {
+  return '<a class="btn ' + (cls || 'sec') + '" href="' + esc(navUrl(p, walk)) + '" target="_blank" rel="noopener">🧭 ' + (label || 'ΑΝΟΙΞΕ ' + navName()) + '</a>';
+}
+
+// ---------------------------------------------------------------------------
+// Notifications (only while the app is open — see Settings for the why)
+// ---------------------------------------------------------------------------
+function notify(key, title, body) {
+  if (S.notified[key]) return;
+  S.notified[key] = now(); save();
+  if (S.settings.notif && 'Notification' in window && Notification.permission === 'granted') {
+    var opts = { body: body, tag: key, icon: 'icon512.png', badge: 'icon512.png' };
+    var plain = function () { try { new Notification(title, opts); } catch (e) {} };
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(function (r) { return r.showNotification(title, opts); }).catch(plain);
+    } else plain();
+  }
+  if (document.visibilityState === 'visible') toast(title + ' — ' + body);
+}
+function checkNotifs(d, pr) {
+  if (!d.today || S.finished) return;
+  var t = d.t, M = 60000;
+  if (d.phase === 'pre' && d.target) {
+    var dep = pr[d.cur].pd, T = STOP_BY[d.target];
+    if (dep - t <= 30 * M && dep - t > 20 * M) notify('pre30', 'Σε 30 λεπτά φεύγετε για ' + T.name + ' ' + T.emoji, 'Αναχώρηση ' + hm(dep) + ' από ' + STOP_BY[d.cur].name + '.');
+    if (t >= dep && t - dep < 20 * M) notify('pre0', 'Ώρα για την επόμενη στάση ❤️', 'Πατήστε «ΞΕΚΙΝΑΜΕ» — πρώτη στάση ' + T.name + '.');
+  }
+  if (d.phase === 'at' && d.target) {
+    var pd = pr[d.cur].pd, N = STOP_BY[d.target];
+    if (pd - t <= 30 * M && pd - t > 20 * M) notify('l30:' + d.cur, 'Σε 30 λεπτά φεύγετε για ' + N.name + ' ' + N.emoji, 'Επόμενη στάση στις ' + hm(pr[d.target].pa) + '.');
+    if (t >= pd && t - pd < 20 * M) notify('l0:' + d.cur, 'Ώρα για την επόμενη στάση ❤️', N.emoji + ' ' + N.name);
+  }
+  if (pr.loutraki && S.started && !st('loutraki').arrivedAt) {
+    var la = pr.loutraki.pa;
+    if (la - t <= 30 * M && la - t > 20 * M) notify('lout30', 'Το τελευταίο κομμάτι της ημέρας ❤️', 'Σε 30 λεπτά ξεκινά το τελευταίο μέρος της ημέρας στο Λουτράκι.');
+  }
+  var ss = sunsetMs();
+  if (ss && S.started && (d.cur === 'loutraki' || d.target === 'loutraki') && ss - t <= 30 * M && ss - t > 0)
+    notify('sunset', 'Το sunset πλησιάζει 🌅', 'Ηλιοβασίλεμα στις ' + hm(ss) + '.');
+}
+
+// ---------------------------------------------------------------------------
+// Screen wake lock (keeps GPS alive while the phone sits on the dashboard)
+// ---------------------------------------------------------------------------
+var wakeLock = null;
+function requestWake() {
+  if (!S.settings.wake || !S.started || S.finished || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+  if (wakeLock) return;
+  navigator.wakeLock.request('screen').then(function (l) {
+    wakeLock = l;
+    l.addEventListener('release', function () { wakeLock = null; });
+  }).catch(function () {});
+}
+function releaseWake() { if (wakeLock) { try { wakeLock.release(); } catch (e) {} wakeLock = null; } }
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+var lastHtml = {};
+function setHTML(id, html) {
+  if (lastHtml[id] === html) return;
+  lastHtml[id] = html;
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.firstChild.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function () { t.classList.remove('on'); }, 3800);
+}
+function timeCell(pr, id) {
+  var p = pr[id];
+  if (!p) return STOP_BY[id].time;
+  var shown = st(id).arrivedAt ? st(id).arrivedAt : p.pa;
+  if (id === S.order[0]) shown = S.started ? st(id).departedAt : p.pd;
+  if (Math.abs(shown - p.P) >= 5 * 60000) return '<s>' + hm(p.P) + '</s> ' + hm(shown);
+  return hm(p.P);
+}
+function actLine(s) { return (s.aemoji ? s.aemoji + ' ' : '') + s.activity; }
+
+// Re-rendering replaces innerHTML, so a region is only touched when its HTML
+// actually changed (render(true) forces it after user actions).
+function render(force) {
+  if (force) lastHtml = {};
+  var d = derive(), pr = project(d), dl = delayMin(d, pr);
+  applyTheme();
+  document.getElementById('tb-sub').textContent = prettyDate(S.tripDate) + (S.sim.on ? ' · 🧪 δοκιμή' : '');
+  setHTML('tb-status', d.phase !== 'done' && (S.started || (d.today && dl > 0)) ? statusChip(dl) : '');
+  document.getElementById('fab').classList.toggle('hide', ui.tab === 'map' || ui.tab === 'settings');
+  try {
+    if (ui.tab === 'trip') renderTrip(d, pr, dl);
+    else if (ui.tab === 'map') renderMapCard(d, pr);
+    else if (ui.tab === 'plan') renderPlan(d, pr, dl);
+    else if (ui.tab === 'nearby') renderNearby(d);
+    else if (ui.tab === 'settings') renderSettings(d);
+  } catch (e) {
+    var id = { trip: 'trip-a', map: 'mapcard' }[ui.tab] || ui.tab;
+    setHTML(id, '<div class="banner bad"><div><b>Κάτι πήγε στραβά</b>' + esc(e.message) + '</div></div>');
+    if (window.console) console.error(e);
+  }
+  if (ui.whatnowOpen) setHTML('whatnow-body', esc(whatNowText(d, pr)));
+}
+
+function banners(d, pr, dl) {
+  var h = '';
+  if (S.sim.on) h += '<div class="banner info"><span>🧪</span><div><b>Λειτουργία δοκιμής</b>Ώρα & θέση προσομοιώνονται. <a href="#" data-a="tab" data-tab="settings">Ρυθμίσεις</a></div></div>';
+  if (!online) h += '<div class="banner warn"><span>📴</span><div><b>OFFLINE MODE</b>Το πρόγραμμα είναι διαθέσιμο offline. Live traffic και online places μπορεί να μην είναι διαθέσιμα.</div></div>';
+  if (!(S.sim.on && S.sim.loc)) {
+    if (geo.status === 'error') {
+      h += '<div class="banner bad"><span>📍</span><div><b>Δεν μπορέσαμε να βρούμε την τοποθεσία σας.</b>' +
+        (geo.err === 'denied' ? 'Η πρόσβαση είναι κλειστή. iPhone: Ρυθμίσεις → Απόρρητο και ασφάλεια → Υπηρεσίες τοποθεσίας → Ιστότοποι Safari → «Ενώ χρησιμοποιείται».' : 'Ελέγξτε ότι το GPS είναι ανοιχτό.') +
+        '<button class="btn sm pri mt2" data-a="allowgeo">ΕΝΕΡΓΟΠΟΙΗΣΗ LOCATION</button></div></div>';
+    } else if (!S.geoAsked) {
+      h += '<div class="banner info"><span>📍</span><div><b>Η τοποθεσία είναι κλειστή</b>Χωρίς GPS δεν μπορούμε να δείξουμε πού είστε και πόσο απέχει η επόμενη στάση.<button class="btn sm pri mt2" data-a="allowgeo">ΕΠΙΤΡΕΠΩ</button></div></div>';
+    } else if (geo.status === 'locating' && !pos) {
+      h += '<div class="banner info"><div class="load">Βρίσκουμε πού είστε…</div></div>';
+    }
+  }
+  var sg = suggestion(d);
+  if (sg && S.dismissed !== sg.id) {
+    var s = STOP_BY[sg.id];
+    h += '<div class="banner rom"><span>' + s.emoji + '</span><div><b>Φαίνεται πως είστε ' + esc(s.at) + '.</b>' +
+      (sg.pre ? 'Να ξεκινήσει η εκδρομή από εδώ;' : 'Να σημειωθεί η άφιξη; (οι ενδιάμεσες στάσεις θα παραλειφθούν)') +
+      '<div class="row mt2"><button class="btn sm pri" data-a="' + (sg.pre ? 'startat' : 'arrivejump') + '" data-id="' + s.id + '">ΝΑΙ</button><button class="btn sm sec" data-a="dismiss" data-id="' + s.id + '">ΟΧΙ</button></div></div></div>';
+  }
+  if ((S.started || d.today) && dl >= 10 && d.phase !== 'done') {
+    var rest = d.ord.filter(function (id) { return (!st(id).arrivedAt || id === d.cur) && (id !== d.ord[0] || !S.started); });
+    h += '<div class="banner warn"><span>⚠️</span><div><b>' + dl + '′ πίσω από το αρχικό πρόγραμμα</b>ΝΕΟ ΠΡΟΓΡΑΜΜΑ<div class="newplan">' +
+      rest.map(function (id) { var s = STOP_BY[id]; var t = st(id).arrivedAt || (id === d.ord[0] ? pr[id].pd : pr[id].pa); return '<div><b>' + hm(t) + '</b><span>' + s.emoji + ' ' + esc(s.name) + '</span></div>'; }).join('') +
+      '</div></div></div>';
+  }
+  var rain = rainWarn(d, pr);
+  if (rain) h += '<div class="banner warn"><span>🌧️</span><div><b>Πιθανή βροχή στις ' + rain.hour + '</b>' + esc(rain.name) + ' · ' + rain.p + '% πιθανότητα</div></div>';
+  return h;
+}
+function rainWarn(d, pr) {
+  var out = null;
+  d.ord.forEach(function (id, i) {
+    if (out || i === 0 || st(id).departedAt) return;
+    var w = wxAt(id, st(id).arrivedAt ? d.t : pr[id].pa);
+    if (w && w.rain >= 60) out = { hour: w.hour, name: STOP_BY[id].name, p: w.rain };
+  });
+  return out;
+}
+
+function trafficNote(lv) {
+  if (lv.provider === 'mapbox' && lv.typical && lv.duration - lv.typical >= 120) return ' · ⚠️ Κίνηση +' + Math.round((lv.duration - lv.typical) / 60) + ' min';
+  if (lv.provider === 'mapbox') return ' · με live κίνηση';
+  return '';
+}
+function routeState(id, cp) {
+  // shared loading / error / offline messages for a route to stop `id`
+  if (!cp) return '';
+  if (route.loading) return '<div class="load mt2">Υπολογίζουμε τη διαδρομή…</div>';
+  if (route.err && online) return '<div class="err mt2">Δεν μπορέσαμε να υπολογίσουμε τη διαδρομή.</div><div class="row mt2"><button class="btn sm sec" data-a="retryroute">↻ ΔΟΚΙΜΑΣΕ ΞΑΝΑ</button>' + navBtn(STOP_BY[id], 'sm sec', 'GOOGLE MAPS') + '</div>';
+  if (!online) return '<div class="dist">≈ ' + fmtDist(hv(cp, STOP_BY[id]) * 1.35) + ' <span class="hint">(εκτίμηση, offline)</span></div>';
+  return '<div class="load mt2">Υπολογίζουμε τη διαδρομή…</div>';
+}
+function upNextCard(d, pr, id, opts) {
+  opts = opts || {};
+  var s = STOP_BY[id], lv = liveFor(id), cp = curPos();
+  var h = '<div class="card"><div class="lbl mut">UP NEXT →</div><div class="next mt">' +
+    '<div class="em">' + s.emoji + '</div><div style="flex:1;min-width:0"><div class="nm">' + esc(s.name) + '</div>' +
+    '<div class="tm">' + timeCell(pr, id) + ' · ' + esc(actLine(s)) + '</div>';
+  if (lv) {
+    h += '<div class="dist">' + (lv.walk ? '🚶 ' : '') + fmtDist(lv.distance) + ' · ~' + fmtDur(lv.duration) + (lv.walk ? ' με τα πόδια' : '') + '</div>' +
+      '<div class="eta">ETA ' + hm(d.t + lv.duration * 1000) + ' αν φύγετε τώρα' + trafficNote(lv) + '</div>';
+  } else if (!cp) {
+    var L = legInfo(d.cur, id);
+    h += '<div class="dist">' + (L.walk ? '🚶 ' : '') + (L.est ? '≈ ' : '') + fmtDist(L.dist) + ' · ~' + fmtDur(L.dur) + '</div><div class="eta">από ' + esc(STOP_BY[d.cur].name) + (L.est ? ' (εκτίμηση)' : '') + '</div>';
+  } else h += routeState(id, cp);
+  if (opts.left != null) {
+    h += '<div class="eta" style="color:var(--ink);margin-top:8px">Έχετε <b>' + fmtMins(Math.max(0, opts.left)) + '</b> μέχρι την επόμενη στάση.</div>';
+  }
+  h += '</div></div>';
+  if (!opts.noGo) h += '<div class="mt"><button class="btn pri" data-a="go" data-id="' + id + '">🧭 ΠΑΜΕ ΕΚΕΙ</button></div>';
+  h += '</div>';
+  return h;
+}
+
+function renderTrip(d, pr, dl) {
+  var a = '', b = '', s, x;
+
+  var wxId = d.phase === 'pre' ? d.cur : d.phase === 'enroute' ? d.target : d.cur;
+  var w = wxId ? wxAt(wxId, d.t) : null;
+  a += '<div class="clockrow"><div><div class="clocklbl">ΤΡΕΧΟΥΣΑ ΩΡΑ</div><div class="clock" id="clock">' + hm(d.t) + '</div></div>' +
+    (w ? '<div class="wx"><b>' + w.icon + ' ' + w.temp + '°C</b><small>' + esc(STOP_BY[wxId].name) + (w.rain >= 30 ? ' · ☔ ' + w.rain + '%' : '') + ' · 💨 ' + w.wind + '</small></div>' : '') + '</div>';
+  a += banners(d, pr, dl);
+
+  var flash = S.arrival && d.t - S.arrival.at < 10 * 60000 && d.t >= S.arrival.at && S.arrival.id === d.cur && d.phase === 'at';
+
+  if (d.phase === 'pre') {
+    s = STOP_BY[d.cur];
+    var ahead = daysBetween(dateStr(d.t), S.tripDate);
+    var dep = pr[d.cur].pd;
+    a += '<div class="card now"><div class="lbl">' + (ahead === 0 ? 'ΣΗΜΕΡΑ' : 'Η ΕΚΔΡΟΜΗ ΜΑΣ') + '</div>' +
+      '<div class="big" style="font-size:40px">' + timeCell(pr, d.cur) + '</div>' +
+      '<div class="act">🚗 Αναχώρηση από ' + esc(s.name) + '</div>' +
+      '<div class="meta">' + (ahead > 0 ? esc(prettyDate(S.tripDate)) + ' · σε ' + ahead + (ahead === 1 ? ' μέρα' : ' μέρες') + ' · <a href="#" data-a="tab" data-tab="settings">αλλαγή</a>' :
+        ahead < 0 ? 'Η ημερομηνία έχει περάσει — ορίστε νέα στις <a href="#" data-a="tab" data-tab="settings">Ρυθμίσεις</a>.' :
+          (dep > d.t ? 'Αναχώρηση σε ' + fmtMins((dep - d.t) / 60000) : 'Ώρα να ξεκινήσετε ❤️')) + '</div>' +
+      '<div class="mt"><button class="btn pri" data-a="start">🚗 ΞΕΚΙΝΑΜΕ</button></div></div>';
+    if (d.target) a += upNextCard(d, pr, d.target, { noGo: true });
+  } else if (d.phase === 'enroute') {
+    s = STOP_BY[d.target];
+    var lv = liveFor(d.target), cp = curPos();
+    var walk = lv ? lv.walk : legInfo(d.cur, d.target).walk;
+    a += '<div class="card now"><div class="lbl">' + (walk ? '🚶 ΠΡΟΣ' : '🚗 ΠΡΟΣ') + '</div><div class="big">' + esc(s.name) + '</div>' +
+      '<div class="act">' + (walk ? 'Περπατάτε προς ' : 'Οδηγείτε προς ') + esc(s.acc) + '</div>';
+    if (lv) {
+      a += '<div class="stats"><div class="stat"><b>' + fmtDist(lv.distance) + '</b><span>ΑΠΟΣΤΑΣΗ</span></div><div class="stat"><b>' + fmtDur(lv.duration) + '</b><span>ΧΡΟΝΟΣ</span></div><div class="stat"><b>' + hm(d.t + lv.duration * 1000) + '</b><span>ETA</span></div></div>';
+      if (lv.provider === 'mapbox' && lv.typical && lv.duration - lv.typical >= 120) a += '<div class="meta">⚠️ Κίνηση +' + Math.round((lv.duration - lv.typical) / 60) + ' min (' + fmtDur(lv.typical) + ' κανονικά)</div>';
+      else a += '<div class="meta">Πρόγραμμα: ' + s.time + (lv.provider === 'osrm' ? ' · χρόνος χωρίς live κίνηση' : lv.provider === 'mapbox' ? ' · με live κίνηση' : '') + '</div>';
+    } else if (!cp) {
+      a += '<div class="load mt">Βρίσκουμε πού είστε…</div>';
+    } else a += routeState(d.target, cp);
+    a += '<div class="mt">' + navBtn(s, 'dark', null, walk) + '</div>' +
+      '<div class="row mt2"><button class="btn sm sec" data-a="arrived" data-id="' + s.id + '">✓ Φτάσαμε</button><button class="btn sm sec" data-a="tab" data-tab="map">🗺️ Χάρτης</button></div></div>';
+  } else if (d.phase === 'at') {
+    s = STOP_BY[d.cur]; x = st(d.cur);
+    var rom = isRomantic(d);
+    var left = d.target ? (pr[d.target].pa - d.t) / 60000 : null;
+    var leaveIn = (pr[d.cur].pd - d.t) / 60000;
+    a += '<div class="card now ' + (rom ? 'romantic' : flash ? 'arrived' : '') + '">' +
+      (flash ? '<div class="ribbon">COMPLETED</div>' : '') +
+      '<div class="lbl">' + (flash ? '🎉 ΦΤΑΣΑΤΕ' : rom ? '❤️ ROMANTIC EVENING' : '📍 ΤΩΡΑ') + '</div>' +
+      '<div class="big">' + (rom ? '📍 ' : '') + esc(s.name) + '</div>' +
+      '<div class="act">' + (rom ? '☕ Καφές &nbsp;·&nbsp; 🌊 Παραλιακή βόλτα' : s.emoji + ' ' + esc(actLine(s))) + '</div>' +
+      '<div class="meta">Φτάσατε ' + hm(x.arrivedAt) + (d.target ? ' · ' + (leaveIn > 0 ? 'αναχώρηση ~' + hm(pr[d.cur].pd) : 'ώρα να φύγετε') : (rom ? ' · χωρίς βιασύνη' : '')) + '</div>' +
+      (s.id === 'corinth' ? '<div class="note">🏛️ Αρχαιολογικός χώρος + Μουσείο = μία στάση, ίδια είσοδος.</div>' : '') +
+      '<div class="row mt"><button class="btn sm sec" data-a="extend" data-min="30">＋30 λεπτά</button>' +
+      (d.target ? '<button class="btn sm sec" data-a="nearby" data-cat="photo">📸 Photo spot</button>' : '<button class="btn sm sec" data-a="finishask">Τέλος ημέρας</button>') + '</div></div>';
+    if (rom) {
+      var ss = sunsetMs();
+      a += '<div class="card"><div class="lbl mut">UP NEXT</div><div class="rom-grid">' +
+        '<button data-a="nearby" data-cat="sunset"><b>🌅</b>Sunset' + (ss ? '<br><span class="hint">' + hm(ss) + '</span>' : '') + '</button>' +
+        '<button data-a="nearby" data-cat="romantic"><b>🥂</b>Drink</button>' +
+        '<button data-a="nearby" data-cat="photo"><b>📸</b>Photo spot</button></div>' +
+        '<button class="btn pri" data-a="nearby" data-cat="romantic">❤️ ΒΡΕΣ ΚΑΤΙ ΡΟΜΑΝΤΙΚΟ</button></div>';
+    }
+    if (d.target) a += upNextCard(d, pr, d.target, { left: left });
+  } else {
+    a += '<div class="card now romantic fade"><div class="lbl">❤️ ΤΕΛΟΣ ΗΜΕΡΑΣ</div><div class="big" style="font-size:30px;text-transform:none">Τι ωραία μέρα</div>' +
+      '<div class="act">Ολοκληρώσατε την εκδρομή — ' + d.visited + ' στάσεις.</div>' +
+      '<div class="meta">Καλή επιστροφή και οδηγείτε προσεκτικά.</div></div>';
+  }
+
+  b += timelineCard(d, pr);
+  setHTML('trip-a', a);
+  setHTML('trip-b', b);
+}
+function timelineCard(d, pr) {
+  var total = d.ord.length, done = S.started ? d.visited : 0;
+  var pct = Math.round(done / total * 100);
+  var h = '<div class="card"><div class="lbl mut">Η ΗΜΕΡΑ</div><div class="tl mt">';
+  S.order.forEach(function (id) {
+    var s = STOP_BY[id], x = st(id), cls = '', mark = '○';
+    if (x.skipped) { cls = 'skip'; mark = '–'; }
+    else if (x.arrivedAt) { cls = 'done'; mark = '✓'; if (id === d.cur && d.phase === 'at') { cls = 'cur'; mark = '●'; } }
+    else if (id === d.target && d.phase !== 'pre') { cls = 'cur'; mark = '→'; }
+    h += '<button class="tli ' + cls + '" data-a="stop" data-id="' + id + '"><span class="dot">' + mark + '</span><span class="t">' + (x.skipped ? s.time : timeCell(pr, id)) + '</span><span class="nm">' + s.emoji + ' ' + esc(s.name) + '</span></button>';
+  });
+  h += '</div><div class="prog"><i style="width:' + pct + '%"></i></div><div class="progtxt"><span>' + done + ' / ' + total + ' στάσεις</span><span>' + pct + '%</span></div>' +
+    (done > 0 ? '<div class="hint mt2">Έχετε ολοκληρώσει το ' + pct + '% της εκδρομής</div>' : '') + '</div>';
+  return h;
+}
+
+function renderMapCard(d, pr) {
+  var id = d.target || d.cur;
+  if (!id || d.phase === 'done') return setHTML('mapcard', '');
+  var s = STOP_BY[id], lv = liveFor(id);
+  var h = '<div class="card" style="padding:14px 16px"><div class="next"><div class="em">' + s.emoji + '</div><div style="flex:1;min-width:0">' +
+    '<div class="lbl mut" style="font-size:10.5px">' + (d.phase === 'enroute' ? 'ΠΡΟΣ' : !d.target ? 'ΤΩΡΑ' : 'ΕΠΟΜΕΝΟ') + '</div>' +
+    '<div class="nm" style="font-size:20px">' + esc(s.name) + '</div>' +
+    (lv && d.target ? '<div class="dist" style="margin-top:4px">' + fmtDist(lv.distance) + ' · ' + fmtDur(lv.duration) + ' · ETA ' + hm(d.t + lv.duration * 1000) + '</div>' : '<div class="tm">' + timeCell(pr, id) + '</div>') +
+    '</div></div>' +
+    (d.target ? '<div class="row mt">' + (d.phase === 'enroute' ? navBtn(s, 'pri sm', 'ΠΛΟΗΓΗΣΗ', lv && lv.walk) : '<button class="btn pri sm" data-a="go" data-id="' + id + '">🧭 ΠΑΜΕ ΕΚΕΙ</button>') + '</div>' : '') +
+    '</div>';
+  setHTML('mapcard', h);
+}
+
+function renderPlan(d, pr, dl) {
+  var h = '<div class="sec-h">Πρόγραμμα</div><div class="sub">' + esc(prettyDate(S.tripDate)) + (dl >= 10 && d.phase !== 'done' ? ' · <b style="color:var(--warn)">' + dl + '′ πίσω — οι ώρες έχουν προσαρμοστεί</b>' : '') + '</div>';
+  S.order.forEach(function (id, i) {
+    var s = STOP_BY[id], x = st(id), p = pr[id];
+    var isCur = id === d.cur && d.phase === 'at';
+    var cls = x.skipped ? 'skip' : x.arrivedAt ? (isCur ? 'cur' : 'done') : id === d.target && d.phase !== 'pre' ? 'cur' : '';
+    var tag = x.skipped ? '<span class="tag">ΠΑΡΑΛΕΙΨΗ</span>' : x.arrivedAt ? (isCur ? '<span class="tag acc">ΤΩΡΑ</span>' : '<span class="tag ok">✓ ' + hm(x.arrivedAt) + '</span>') : id === d.target && d.phase !== 'pre' ? '<span class="tag acc">ΕΠΟΜΕΝΗ</span>' : '';
+    var w = p && !x.skipped && i > 0 ? wxAt(id, p.pa) : null;
+    var prevId = S.order[i - 1];
+    h += '<div class="card pc ' + cls + '"><button class="hd" data-a="stop" data-id="' + id + '"><div class="em">' + s.emoji + '</div><div style="flex:1;min-width:0">' +
+      '<div class="t">' + (x.skipped ? s.time : timeCell(pr, id)) + tag + '</div><div class="nm">' + esc(s.name) + '</div><div class="ac">' + esc(actLine(s)) + (s.dur ? ' · ~' + fmtMins(s.dur + (x.extra || 0)) : '') + '</div></div>' +
+      (w ? '<div style="text-align:right;font-size:13px">' + w.icon + '<br><b>' + w.temp + '°</b></div>' : '') + '</button>' +
+      '<div class="bd"><div class="hint">' + esc(s.address) + (s.plus ? ' · Plus Code ' + s.plus : '') + '</div>' +
+      (s.info ? '<div class="note">' + esc(s.info) + '</div>' : '') +
+      (s.warn ? '<div class="note" style="border-color:var(--warn)">⚠️ ' + esc(s.warn) + '</div>' : '') +
+      (i > 0 && !x.arrivedAt && !x.skipped ? '<div class="row mt"><button class="btn sm pri" data-a="go" data-id="' + id + '">🧭 ΠΑΜΕ ΕΚΕΙ</button>' + navBtn(s, 'sm sec', 'Maps', legInfo(prevId, id).walk) + '</div>' : '') +
+      '</div></div>';
+  });
+  h += '<div class="hint" style="text-align:center">Πατήστε μια στάση για λεπτομέρειες, parking και photo spots.</div>';
+  setHTML('plan', h);
+}
+
+function renderNearby(d) {
+  var ref = nearRef(d), cat = ui.near.cat, C = CAT_BY[cat];
+  var h = '<div class="sec-h">📍 Κοντά μας</div><div class="sub">' + esc(C.icon + ' ' + C.label + ' ' + ref.label) +
+    (ui.near.ref ? ' · <a href="#" data-a="nearref">κοντά μου</a>' : '') + '</div><div class="cats">';
+  CATS.forEach(function (c) { h += '<button class="cat ' + (c.id === cat ? 'on' : '') + '" data-a="cat" data-cat="' + c.id + '">' + c.icon + ' ' + c.label + '</button>'; });
+  h += '</div>';
+  var items = curatedFor(cat, ref);
+  var res = loadPlaces(cat, ref);
+  if (res.items) items = items.concat(res.items);
+  ui.lastPlaces = items;
+  h += '<div class="card" style="padding:4px 16px">';
+  if (res.loading && !items.length) h += '<div class="load" style="padding:16px 0">Βρίσκουμε τι υπάρχει κοντά σας…</div>';
+  items.forEach(function (it, i) {
+    h += '<button class="pli ' + (it.cur ? 'cur' : '') + '" data-a="place" data-i="' + i + '"><div class="ic">' + (it.icon || C.icon) + '</div><div style="min-width:0;flex:1"><div class="nm">' + esc(it.name) + '</div><div class="ds">' + esc([it.type, it.extra].filter(Boolean).join(' · ')) + '</div></div><div class="km">' + fmtDist(it.d) + '</div></button>';
+  });
+  if (res.loading && items.length) h += '<div class="load" style="padding:12px 0">Βρίσκουμε τι υπάρχει κοντά σας…</div>';
+  if (!res.loading && !items.length) h += '<div style="padding:16px 0" class="hint">' + (res.err === 'offline' ? 'Είστε offline — τα κοντινά μέρη χρειάζονται internet.' : res.err ? 'Δεν μπορέσαμε να φορτώσουμε τα κοντινά μέρη. <a href="#" data-a="cat" data-cat="' + cat + '" data-retry="1">Δοκιμάστε ξανά</a>' : 'Δεν βρέθηκε κάτι κοντά.') + '</div>';
+  h += '</div>';
+  if (items.length) h += '<button class="btn sec" data-a="nearmap">🗺️ Δείξε τα στον χάρτη</button>';
+  h += '<div class="hint mt">Δεδομένα από OpenStreetMap — μπορεί να λείπουν κάποια μαγαζιά. Καμία επιλογή δεν αλλάζει το πρόγραμμα.</div>';
+  setHTML('nearby', h);
+}
+
+function swt(key, on) { return '<label class="sw"><input type="checkbox" data-set="' + key + '" ' + (on ? 'checked' : '') + '><i></i></label>'; }
+function sel(key, val, opts) { return '<select data-set="' + key + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>'; }
+function renderSettings(d) {
+  var set = S.settings, np = 'Notification' in window ? Notification.permission : 'unsupported';
+  var gs = S.sim.on && S.sim.loc ? '🧪 προσομοίωση' : geo.status === 'ok' ? '🟢 ενεργή' + (pos ? ' (±' + Math.round(pos.acc) + ' m)' : '') : geo.status === 'error' ? '🔴 ' + (geo.err === 'denied' ? 'απορρίφθηκε' : 'μη διαθέσιμη') : geo.status === 'locating' ? '🟡 αναζήτηση…' : '⚪ κλειστή';
+  var standalone = window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  var navLabel = { google: 'Google Maps', apple: 'Apple Maps', waze: 'Waze' }[set.nav];
+  var h = '<div class="sec-h">Ρυθμίσεις</div>' +
+    (!standalone ? '<div class="banner rom"><span>📲</span><div><b>Βάλ\' το στην αρχική οθόνη</b>Safari → Κοινοποίηση ⬆️ → «Προσθήκη στην οθόνη Αφετηρίας». Ανοίγει σαν εφαρμογή και δουλεύουν οι ειδοποιήσεις.</div></div>' : '') +
+    '<div class="card">' +
+    '<div class="set"><div class="k">📅 Ημερομηνία εκδρομής</div><input type="date" data-set="tripDate" value="' + S.tripDate + '"></div>' +
+    '<div class="set"><div class="k">📍 Τοποθεσία<small>' + gs + '</small></div><button class="btn sm sec" style="width:auto;padding:0 14px" data-a="allowgeo">Ενεργοποίηση</button></div>' +
+    '<div class="set"><div class="k">🔔 Ειδοποιήσεις<small>' + (np === 'granted' ? 'Επιτρέπονται' : np === 'denied' ? 'Απορρίφθηκαν στη συσκευή' : np === 'unsupported' ? 'Στο iPhone: πρώτα «Προσθήκη στην οθόνη Αφετηρίας»' : 'Θα ζητηθεί άδεια') + ' · όσο η εφαρμογή είναι ανοιχτή.</small></div>' + swt('notif', set.notif && np === 'granted') + '</div>' +
+    '<div class="set"><div class="k">🔆 Οθόνη πάντα αναμμένη<small>Κατά την εκδρομή — κρατάει το GPS ζωντανό.</small></div>' + swt('wake', set.wake) + '</div>' +
+    '<div class="set"><div class="k">🌤️ Καιρός</div>' + swt('weather', set.weather) + '</div>' +
+    '<div class="set"><div class="k">🗺️ Χάρτης</div>' + sel('map', set.map, [['osm', 'OpenStreetMap'], ['esri', 'Esri'], ['mapbox', 'Mapbox (token)']]) + '</div>' +
+    '<div class="set"><div class="k">🧭 Πλοήγηση με</div>' + sel('nav', set.nav, [['google', 'Google Maps'], ['apple', 'Apple Maps'], ['waze', 'Waze']]) + '</div>' +
+    '<div class="set"><div class="k">🌙 Εμφάνιση</div>' + sel('theme', set.theme, [['auto', 'Αυτόματα'], ['light', 'Φωτεινό'], ['dark', 'Σκοτεινό']]) + '</div>' +
+    '<div class="set"><div class="k">📏 Μονάδες</div>' + sel('units', set.units, [['km', 'km'], ['mi', 'miles']]) + '</div>' +
+    '<div class="set" style="display:block"><div class="k">🔑 Mapbox token (προαιρετικό)<small>Δίνει live κίνηση στους χρόνους. Μένει μόνο σε αυτή τη συσκευή.' + (CFG.mapboxToken ? ' Υπάρχει ήδη token από το build.' : '') + '</small></div><input type="text" data-set="token" placeholder="pk.…" value="' + esc(set.token) + '" autocapitalize="off" autocomplete="off" spellcheck="false"></div>' +
+    '</div>' +
+    '<div class="card"><div class="set"><div class="k">📦 Offline<small>Το πρόγραμμα, οι διευθύνσεις και η πρόοδος δουλεύουν χωρίς internet. Όσα κομμάτια του χάρτη έχετε δει αποθηκεύονται αυτόματα — ρίξτε μια ματιά στον χάρτη γύρω από τις στάσεις πριν φύγετε.</small></div></div>' +
+    '<div class="set"><div class="k">↺ Επαναφορά εκδρομής<small>Σβήνει την πρόοδο (όχι τις ρυθμίσεις).</small></div><button class="btn sm sec" style="width:auto;padding:0 14px;color:var(--bad)" data-a="resetask">Reset</button></div></div>' +
+    simSettings() +
+    '<div class="card hint" style="line-height:1.6"><b style="color:var(--ink)">Καλό να ξέρετε</b><br>' +
+    '• Το GPS και οι ειδοποιήσεις δουλεύουν όσο η εφαρμογή είναι ανοιχτή (περιορισμός του iPhone για web εφαρμογές). Όταν ανοίγετε ' + navLabel + ' για φωνητική πλοήγηση και μετά γυρίζετε εδώ, όλα ενημερώνονται αμέσως.<br>' +
+    '• Χρόνοι διαδρομής: ' + (token() ? 'Mapbox με live κίνηση.' : 'OSRM / OpenStreetMap, χωρίς live κίνηση.') + '<br>' +
+    '• Καιρός: Open-Meteo. Κοντινά μέρη: OpenStreetMap.</div>' +
+    '<div class="build">build ' + BUILD + '</div>';
+  setHTML('settings', h);
+}
+function simSettings() {
+  var s = S.sim, h = '<div class="card"><div class="set"><div class="k">🧪 Λειτουργία δοκιμής<small>Δοκιμάστε την εκδρομή πριν τη μέρα: αλλάξτε ώρα και θέση.</small></div>' + swt('sim.on', s.on) + '</div>';
+  if (s.on) {
+    h += '<div class="set"><div class="k">Ώρα</div><input type="time" data-set="sim.time" value="' + hm(now()) + '"></div>' +
+      '<div class="set"><div class="k">Γρήγορα</div><div class="row" style="flex:none;gap:6px"><button class="btn sm sec" style="width:auto;padding:0 10px" data-a="simadd" data-min="5">+5′</button><button class="btn sm sec" style="width:auto;padding:0 10px" data-a="simadd" data-min="15">+15′</button><button class="btn sm sec" style="width:auto;padding:0 10px" data-a="simadd" data-min="60">+1ώ</button></div></div>' +
+      '<div class="set"><div class="k">Θέση</div>' + sel('sim.loc', s.loc ? (s.loc.id || 'custom') : '', [['', 'Πραγματικό GPS']].concat(STOPS.map(function (x) { return [x.id, x.name]; })).concat(s.loc && !s.loc.id ? [['custom', 'Σημείο χάρτη']] : [])) + '</div>' +
+      '<div class="set"><div class="k">Πάτημα στον χάρτη = θέση<small>Στην καρτέλα Χάρτης.</small></div>' + swt('sim.tap', s.tap) + '</div>';
+  }
+  return h + '</div>';
+}
+
+// ---------------------------------------------------------------------------
+// "Τι κάνουμε τώρα;"
+// ---------------------------------------------------------------------------
+function whatNowText(d, pr) {
+  var t = d.t, lines = [];
+  if (d.phase === 'pre') {
+    var dep = pr[d.cur].pd, T = STOP_BY[d.target], ahead = daysBetween(dateStr(t), S.tripDate);
+    if (ahead > 0) return 'Η εκδρομή είναι ' + prettyDate(S.tripDate) + ' ❤️\n\nΑναχώρηση ' + STOP_BY[d.cur].time + ' από ' + STOP_BY[d.cur].name + ', πρώτη στάση ' + T.name + ' στις ' + T.time + '.\n\nΘέλετε να τη δοκιμάσετε από πριν; Ρυθμίσεις → Λειτουργία δοκιμής.';
+    if (dep > t) lines.push('Καλημέρα ❤️', '', 'Φεύγετε στις ' + hm(dep) + ' — σε ' + fmtMins((dep - t) / 60000) + '.');
+    else lines.push('Είναι ώρα να ξεκινήσετε! 🚗', '', 'Πατήστε «ΞΕΚΙΝΑΜΕ» και η εφαρμογή αναλαμβάνει τα υπόλοιπα.');
+    var L = legInfo(d.cur, d.target);
+    lines.push('Πρώτη στάση: ' + T.name + ' ' + T.emoji + ' — περίπου ' + fmtDur(L.dur) + ' δρόμος.');
+    var w = wxAt(d.target, pr[d.target].pa);
+    if (w) lines.push('', 'Καιρός εκεί: ' + w.icon + ' ' + w.temp + '°C' + (w.rain >= 40 ? ', πιθανή βροχή — πάρτε ομπρέλα.' : '.'));
+    return lines.join('\n');
+  }
+  if (d.phase === 'enroute') {
+    var N = STOP_BY[d.target], lv = liveFor(d.target);
+    lines.push((lv && lv.walk ? 'Περπατάτε' : 'Οδηγείτε') + ' προς ' + N.acc + ' ' + N.emoji);
+    if (lv) lines.push('', 'Φτάνετε περίπου στις ' + hm(t + lv.duration * 1000) + ' (' + fmtDist(lv.distance) + ').');
+    lines.push('', 'Χαλαρά — η εφαρμογή θα καταλάβει μόνη της πότε φτάσατε.');
+    return lines.join('\n');
+  }
+  if (d.phase === 'done') return 'Τι ωραία μέρα ❤️\n\nΟλοκληρώσατε την εκδρομή. Καλή επιστροφή — και οδηγείτε προσεκτικά.';
+  var C = STOP_BY[d.cur];
+  lines.push('Είστε ' + C.at + ' ❤️');
+  if (d.target) {
+    var N2 = STOP_BY[d.target], left = (pr[d.target].pa - t) / 60000, leave = (pr[d.cur].pd - t) / 60000;
+    lines.push('');
+    if (leave > 10) lines.push('Έχετε περίπου ' + fmtMins(left) + ' μέχρι ' + (N2.id === 'lunch' ? 'το φαγητό' : N2.acc) + '.');
+    else if (leave > 0) lines.push('Σε ' + fmtMins(leave) + ' καλό είναι να ξεκινάτε για ' + N2.acc + '.');
+    else lines.push('Ώρα να ξεκινάτε για ' + N2.acc + ' — πατήστε «ΠΑΜΕ ΕΚΕΙ».');
+    if (leave > 10 && C.tip) lines.push('', C.tip);
+    if (C.id === 'lunch' && leave <= 15 && leave > 0) lines.push('', 'Ζητήστε σιγά-σιγά τον λογαριασμό.');
+    lines.push('', 'Επόμενη στάση:', N2.name + ' — ' + hm(pr[d.target].pa));
+  } else {
+    if (C.tip) lines.push('', C.tip);
+    var ss = sunsetMs();
+    if (ss && ss > t) lines.push('', '🌅 Ηλιοβασίλεμα στις ' + hm(ss) + (ss - t < 90 * 60000 ? ' — βρείτε μια θέση με θέα στη θάλασσα.' : '.'));
+    if (C.romantic) lines.push('', 'Για ένα ποτό ή ένα ήσυχο σημείο: «❤️ ΒΡΕΣ ΚΑΤΙ ΡΟΜΑΝΤΙΚΟ».');
+  }
+  var w2 = wxAt(d.cur, t);
+  if (w2 && w2.rain >= 50) lines.push('', '☔ Πιθανή βροχή (' + w2.rain + '%) — καλό είναι να έχετε κι ένα σχέδιο για κλειστό χώρο.');
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// Sheets
+// ---------------------------------------------------------------------------
+function openSheet(html) {
+  var r = document.getElementById('sheet-root');
+  r.innerHTML = '<div class="sheet-bg" data-a="close"></div><div class="sheet"><div class="grab"></div>' + html + '</div>';
+  void r.offsetWidth;
+  r.classList.add('open');
+}
+function closeSheet() {
+  var r = document.getElementById('sheet-root');
+  r.classList.remove('open');
+  ui.whatnowOpen = false;
+  setTimeout(function () { if (!r.classList.contains('open')) r.innerHTML = ''; }, 320);
+}
+function confirmSheet(title, text, okLabel, okAction, okData) {
+  openSheet('<h3>' + title + '</h3><p>' + text + '</p><div class="row mt"><button class="btn sec" data-a="close">ΑΚΥΡΟ</button><button class="btn pri" data-a="' + okAction + '" ' + (okData || '') + '>' + okLabel + '</button></div>');
+}
+function stopSheet(id) {
+  var d = derive(), pr = project(d), s = STOP_BY[id], x = st(id), cp = curPos();
+  var i = S.order.indexOf(id), w = pr[id] && i > 0 ? wxAt(id, pr[id].pa) : null;
+  var walk = cp ? hv(cp, s) < WALK : false;
+  var h = '<div style="font-size:34px">' + s.emoji + '</div><h3>' + esc(s.name) + '</h3>' +
+    '<div class="hint" style="font-size:14px">' + (x.skipped ? s.time + ' · παραλείπεται' : timeCell(pr, id)) + ' · ' + esc(actLine(s)) + (s.dur ? ' · ~' + fmtMins(s.dur + (x.extra || 0)) : '') + '</div>' +
+    '<p style="font-size:14px">' + esc(s.address) + (s.plus ? '<br>Plus Code: ' + s.plus : '') + '</p>' +
+    (cp ? '<p style="font-size:14px">📍 ' + fmtDist(hv(cp, s)) + ' από εσάς (ευθεία)</p>' : '') +
+    (w ? '<p style="font-size:14px">' + w.icon + ' ' + w.temp + '°C ' + w.text + ' · ☔ ' + w.rain + '% · 💨 ' + w.wind + ' km/h (' + w.hour + ')</p>' : '') +
+    (s.info ? '<div class="banner info" style="font-size:13.5px"><div>' + esc(s.info) + '</div></div>' : '') +
+    (s.warn ? '<div class="banner warn" style="font-size:13.5px"><div>⚠️ ' + esc(s.warn) + '</div></div>' : '');
+  if (i > 0 && !x.arrivedAt && !x.skipped) h += '<button class="btn pri mt" data-a="go" data-id="' + id + '">🧭 ΠΑΜΕ ΕΚΕΙ</button>';
+  h += '<div class="mt2">' + navBtn(s, 'sec', null, walk) + '</div>';
+  h += '<div class="row mt2"><button class="btn sm sec" data-a="nearby" data-cat="parking" data-ref="' + id + '">🅿️ Βρες parking</button><button class="btn sm sec" data-a="nearby" data-cat="photo" data-ref="' + id + '">📸 Photo spots</button></div>';
+  if (s.phone || s.cid) h += '<div class="row mt2">' + (s.phone ? '<a class="btn sm sec" href="tel:' + s.phone + '">📞 Κλήση</a>' : '') + (s.cid ? '<a class="btn sm sec" href="https://maps.google.com/?cid=' + s.cid + '" target="_blank" rel="noopener">⭐ Κριτικές</a>' : '') + '</div>';
+  if (i > 0) {
+    h += '<div class="row mt2">';
+    if (x.skipped) h += '<button class="btn sm ghost" data-a="unskip" data-id="' + id + '">↺ Επαναφορά στάσης</button>';
+    else if (!x.arrivedAt) h += '<button class="btn sm ghost" data-a="arrivejump" data-id="' + id + '">✓ Φτάσαμε εδώ</button><button class="btn sm ghost" data-a="skipask" data-id="' + id + '">Παράλειψη</button>';
+    h += '</div>';
+  }
+  openSheet(h);
+}
+function placeSheet(it) {
+  var cp = curPos(), idx = ui.lastPlaces.indexOf(it);
+  openSheet('<div style="font-size:30px">' + (it.icon || CAT_BY[ui.near.cat].icon) + '</div><h3>' + esc(it.name) + '</h3><p class="hint" style="font-size:14px">' + esc([it.type, it.extra].filter(Boolean).join(' · ')) + '</p>' +
+    '<p style="font-size:14px">📍 ' + fmtDist(it.d) + ' ' + esc(nearRef(derive()).label) + '</p>' +
+    '<div class="hint">Η επιλογή αυτή δεν αλλάζει το πρόγραμμά σας.</div>' +
+    '<div class="mt">' + navBtn(it, 'pri', 'ΠΛΟΗΓΗΣΗ ΕΚΕΙ', cp && hv(cp, it) < WALK) + '</div>' +
+    (idx >= 0 ? '<button class="btn sec mt2" data-a="placemap" data-i="' + idx + '">🗺️ Δείξε στον χάρτη</button>' : ''));
+}
+function menuSheet() {
+  var d = derive();
+  var o = function (a, ic, t, extra) { return '<button class="opt" data-a="' + a + '" ' + (extra || '') + '><span>' + ic + '</span>' + t + '</button>'; };
+  var h = '<h3>Χρειάζομαι αλλαγή</h3>' +
+    (d.phase !== 'done' ? o('delay', '⏱️', 'Καθυστέρησα') : '') +
+    (d.phase === 'at' ? o('stay', '⏳', 'Θέλω να μείνω περισσότερο εδώ') : '') +
+    (d.target ? o('skipask', '⤼', 'Θέλω να παραλείψω αυτή τη στάση', 'data-id="' + d.target + '"') : '') +
+    (d.target ? o('changedest', '🔀', 'Θέλω να αλλάξω προορισμό') : '') +
+    o('nearby', '☕', 'Βρες καφέ', 'data-cat="cafe"') +
+    o('nearby', '🍴', 'Βρες φαγητό', 'data-cat="food"') +
+    o('nearby', '🅿️', 'Βρες parking', 'data-cat="parking"') +
+    o('nearby', '⛽', 'Βρες βενζινάδικο', 'data-cat="fuel"') +
+    o('nearby', '🚻', 'Βρες τουαλέτα', 'data-cat="toilets"') +
+    o('nearby', '🌅', 'Βρες sunset', 'data-cat="sunset"');
+  openSheet(h);
+}
+function addExtra(min) {
+  var d = derive();
+  var id = d.phase === 'pre' || d.phase === 'at' ? d.cur : null;
+  if (!id) { toast('Η ώρα άφιξης υπολογίζεται ζωντανά από το GPS 👍'); return; }
+  var x = st(id);
+  x.extra = (x.extra || 0) + min;
+  save();
+  toast(d.phase === 'pre' ? 'Αναχώρηση +' + min + ' λεπτά — το πρόγραμμα προσαρμόστηκε' : '+' + min + ' λεπτά ' + (id === 'lunch' ? 'στο φαγητό' : 'εδώ') + ' — οι επόμενες στάσεις μετακινήθηκαν');
+  render(true);
+}
+
+// ---------------------------------------------------------------------------
+// Actions
+// ---------------------------------------------------------------------------
+var ACT = {
+  tab: function (el) { closeSheet(); showTab(el.dataset.tab); },
+  close: closeSheet,
+  menu: menuSheet,
+  whatnow: function () {
+    var d = derive();
+    openSheet('<div class="lbl">✨ ΤΙ ΚΑΝΟΥΜΕ ΤΩΡΑ;</div><p class="say" id="whatnow-body">' + esc(whatNowText(d, project(d))) + '</p><button class="btn sec mt" data-a="close">OK ❤️</button>');
+    ui.whatnowOpen = true;
+    lastHtml['whatnow-body'] = null;
+  },
+  start: function () {
+    var t = now();
+    if (S.tripDate !== dateStr(t)) {
+      confirmSheet('Ξεκινάμε σήμερα;', 'Η εκδρομή είναι ορισμένη για ' + esc(prettyDate(S.tripDate)) + '. Να ξεκινήσει σήμερα, ' + esc(prettyDate(dateStr(t))) + ';', '🚗 ΞΕΚΙΝΑΜΕ', 'startnow');
+      return;
+    }
+    startTrip();
+  },
+  startnow: function () { closeSheet(); startTrip(); },
+  startat: function (el) { startTrip(el.dataset.id); },
+  go: function (el) {
+    var id = el.dataset.id, d = derive();
+    closeSheet();
+    if (!S.started) {
+      if (S.tripDate !== dateStr(now())) { ACT.start(); return; }
+      startTrip();
+      d = derive();
+    }
+    if (d.target !== id) {
+      // heading somewhere other than the scheduled next stop: it becomes next
+      var ord = S.order;
+      ord.splice(ord.indexOf(id), 1);
+      ord.splice(ord.indexOf(d.cur) + 1, 0, id);
+      st(id).skipped = false;
+      save(); fetchLegs(true);
+      d = derive();
+    }
+    if (d.phase === 'at') markDeparted(d.cur);
+    save();
+    requestWake();
+    route.live = null;
+    showTab('trip');
+    maybeRoute(true);
+    render(true);
+    updateMaps();
+    fitMini(true);
+  },
+  arrived: function (el) {
+    var d = derive();
+    if (d.phase === 'at') markDeparted(d.cur);
+    markArrived(el.dataset.id, 'manual');
+  },
+  arrivejump: function (el) {
+    var id = el.dataset.id, d = derive();
+    closeSheet();
+    if (!S.started) { startTrip(id); return; }
+    var ord = activeOrder(), i = ord.indexOf(id);
+    ord.slice(d.visited, i).forEach(function (b) { st(b).skipped = true; });
+    if (d.cur) markDeparted(d.cur);
+    fetchLegs(true);
+    markArrived(id, 'manual');
+  },
+  dismiss: function (el) { S.dismissed = el.dataset.id; save(); render(true); },
+  extend: function (el) { closeSheet(); addExtra(+el.dataset.min); },
+  delay: function () {
+    var d = derive();
+    if (d.phase === 'enroute') {
+      openSheet('<h3>Καθυστέρησα</h3><p>Καθ\' οδόν η ώρα άφιξης υπολογίζεται ζωντανά από το GPS, οπότε οι επόμενες στάσεις ήδη προσαρμόζονται μόνες τους.</p><button class="btn sec mt" data-a="close">OK</button>');
+      return;
+    }
+    openSheet('<h3>' + (d.phase === 'pre' ? 'Θα φύγουμε αργότερα' : 'Καθυστερήσαμε') + '</h3><p>Πόσο; Οι επόμενες στάσεις θα μετακινηθούν αυτόματα.</p>' +
+      '<div class="row mt"><button class="btn sec" data-a="extend" data-min="15">+15′</button><button class="btn sec" data-a="extend" data-min="30">+30′</button><button class="btn sec" data-a="extend" data-min="60">+1 ώρα</button></div>');
+  },
+  stay: function () {
+    openSheet('<h3>Μένουμε περισσότερο</h3><p>Οι επόμενες στάσεις θα μετακινηθούν ανάλογα.</p><div class="row mt"><button class="btn sec" data-a="extend" data-min="15">+15′</button><button class="btn pri" data-a="extend" data-min="30">+30′</button><button class="btn sec" data-a="extend" data-min="60">+1 ώρα</button></div>');
+  },
+  skipask: function (el) {
+    var id = el.dataset.id || derive().target;
+    if (!id) return;
+    confirmSheet('Παράλειψη στάσης', 'Θέλετε να παραλείψετε ' + esc(STOP_BY[id].acc) + ';', 'ΠΑΡΑΛΕΙΨΗ', 'skip', 'data-id="' + id + '"');
+  },
+  skip: function (el) {
+    st(el.dataset.id).skipped = true;
+    save(); closeSheet();
+    route.live = null;
+    fetchLegs(true); maybeRoute(true);
+    toast('Η στάση παραλείφθηκε — το πρόγραμμα επανυπολογίστηκε');
+    render(true); updateMaps();
+  },
+  unskip: function (el) { st(el.dataset.id).skipped = false; save(); closeSheet(); fetchLegs(true); render(true); updateMaps(); },
+  changedest: function () {
+    var d = derive(), ord = activeOrder(), rest = ord.slice(d.phase === 'pre' ? 1 : d.visited);
+    var h = '<h3>Πού πάμε;</h3><p>Διαλέξτε την επόμενη στάση — οι υπόλοιπες μένουν στο πρόγραμμα.</p>';
+    rest.forEach(function (id) { var s = STOP_BY[id]; h += '<button class="opt" data-a="go" data-id="' + id + '"><span>' + s.emoji + '</span>' + esc(s.name) + (id === d.target ? ' <span class="tag acc">ΕΠΟΜΕΝΗ</span>' : '') + '</button>'; });
+    openSheet(h);
+  },
+  nearby: function (el) {
+    ui.near.cat = el.dataset.cat || ui.near.cat;
+    var r = el.dataset.ref;
+    ui.near.ref = r ? { lat: STOP_BY[r].lat, lng: STOP_BY[r].lng, label: 'κοντά ' + STOP_BY[r].at } : null;
+    closeSheet(); showTab('nearby');
+  },
+  nearref: function () { ui.near.ref = null; render(true); },
+  cat: function (el) {
+    ui.near.cat = el.dataset.cat;
+    if (el.dataset.retry) placesCache = {};
+    render(true);
+  },
+  place: function (el) { var it = ui.lastPlaces[+el.dataset.i]; if (it) placeSheet(it); },
+  placemap: function (el) {
+    var it = ui.lastPlaces[+el.dataset.i];
+    closeSheet(); showTab('map');
+    showNearbyOnMap(it);
+  },
+  nearmap: function () { showTab('map'); showNearbyOnMap(null); },
+  stop: function (el) { stopSheet(el.dataset.id); },
+  finishask: function () { confirmSheet('Τέλος ημέρας;', 'Να κλείσει η εκδρομή; ❤️', 'ΤΕΛΟΣ', 'finish'); },
+  finish: function () { var d = derive(); markDeparted(d.cur); S.finished = now(); save(); releaseWake(); closeSheet(); render(true); updateMaps(); },
+  retryroute: function () { route.err = null; maybeRoute(true); render(true); },
+  allowgeo: function () {
+    if (geo.watch != null) { try { navigator.geolocation.clearWatch(geo.watch); } catch (e) {} }
+    geo.watch = null; S.geoAsked = true; save();
+    startGeo(); render(true);
+  },
+  recenter: function () {
+    var p = curPos(), M = MAPS.full;
+    if (p && M) M.m.setView([p.lat, p.lng], Math.max(M.m.getZoom(), 15));
+    else toast('Βρίσκουμε πού είστε…');
+  },
+  fitall: function () { fitAll(MAPS.full); },
+  resetask: function () { confirmSheet('Επαναφορά εκδρομής;', 'Θα σβηστεί η πρόοδος της ημέρας (αφίξεις, παραλείψεις, καθυστερήσεις). Οι ρυθμίσεις μένουν.', 'RESET', 'reset'); },
+  reset: function () {
+    S.started = null; S.finished = null; S.stops = {}; S.notified = {}; S.arrival = null; S.dismissed = null;
+    S.order = STOPS.map(function (s) { return s.id; });
+    save(); closeSheet(); releaseWake(); route.live = null; fetchLegs(true);
+    toast('Η εκδρομή επανήλθε'); showTab('trip');
+  },
+  simadd: function (el) { S.sim.offset += (+el.dataset.min) * 60000; save(); tick(true); render(true); },
+  onbok: function () {
+    S.onboarded = true; S.geoAsked = true; save();
+    var o = document.getElementById('onb'); if (o) o.remove();
+    startGeo(); render(true);
+  },
+  onbskip: function () { S.onboarded = true; save(); var o = document.getElementById('onb'); if (o) o.remove(); render(true); }
+};
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-a]');
+  if (!el) return;
+  var f = ACT[el.dataset.a];
+  if (f) { e.preventDefault(); f(el); }
+});
+document.addEventListener('change', function (e) {
+  var el = e.target, k = el.dataset && el.dataset.set;
+  if (!k) return;
+  var v = el.type === 'checkbox' ? el.checked : el.value;
+  if (k === 'tripDate') {
+    if (!v) return;
+    S.tripDate = v; wx = null; S.notified = {}; fetchWeather(true);
+  } else if (k === 'notif') {
+    if (v && !('Notification' in window)) { toast('Στο iPhone: πρώτα «Προσθήκη στην οθόνη Αφετηρίας»'); el.checked = false; return; }
+    if (v && Notification.permission !== 'granted') {
+      Notification.requestPermission().then(function (p) { S.settings.notif = p === 'granted'; save(); render(true); if (p === 'granted') toast('🔔 Οι ειδοποιήσεις ενεργοποιήθηκαν'); });
+      return;
+    }
+    S.settings.notif = v;
+  } else if (k === 'sim.on') {
+    S.sim.on = v;
+    if (!v) S.sim.offset = 0;
+  } else if (k === 'sim.time') {
+    if (!v) return;
+    S.sim.offset = athensMs(S.tripDate, v) - Date.now();
+  } else if (k === 'sim.loc') {
+    S.sim.loc = v && STOP_BY[v] ? { lat: STOP_BY[v].lat, lng: STOP_BY[v].lng, id: v } : (v === 'custom' ? S.sim.loc : null);
+  } else if (k === 'sim.tap') {
+    S.sim.tap = v;
+  } else if (k in S.settings) {
+    S.settings[k] = v;
+    if (k === 'weather' && v) fetchWeather(true);
+    if (k === 'wake') { if (v) requestWake(); else releaseWake(); }
+    if (k === 'token') { route.live = null; maybeRoute(true); }
+  }
+  save();
+  if (k.indexOf('sim.') === 0) { hits.arrive = hits.depart = 0; route.live = null; detect(); maybeRoute(true); }
+  render(true); updateMaps(true);
+});
+
+function showTab(t) {
+  ui.tab = t;
+  ['trip', 'map', 'plan', 'nearby', 'settings'].forEach(function (x) {
+    document.getElementById('tab-' + x).classList.toggle('on', x === t);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#tabbar button'), function (b) { b.classList.toggle('on', b.dataset.tab === t); });
+  document.getElementById('tab-' + t).scrollTop = 0;
+  render(true);
+  setTimeout(function () {
+    if (t === 'map') { var M = ensureMap('full'); M.m.invalidateSize(); if (!M.fitted) { fitAll(M); M.fitted = true; } }
+    if (t === 'trip' && MAPS.mini) MAPS.mini.m.invalidateSize();
+    updateMaps(true);
+  }, 30);
+}
+
+// ---------------------------------------------------------------------------
+// Maps (Leaflet)
+// ---------------------------------------------------------------------------
+var MAPS = {};
+function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function applyTheme() {
+  var t = S.settings.theme, dark = t === 'dark' || (t === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  var want = dark ? 'dark' : 'light';
+  if (document.documentElement.getAttribute('data-theme') !== want) {
+    document.documentElement.setAttribute('data-theme', want);
+    var m = document.querySelector('meta[name=theme-color]');
+    if (m) m.setAttribute('content', dark ? '#141011' : '#F7F3EE');
+  }
+}
+function tileDef() {
+  var dark = isDark(), tk = token(), p = S.settings.map;
+  if (p === 'mapbox' && tk) return { url: 'https://api.mapbox.com/styles/v1/mapbox/' + (dark ? 'dark-v11' : 'streets-v12') + '/tiles/256/{z}/{x}/{y}@2x?access_token=' + tk, o: { attribution: '© Mapbox © OpenStreetMap', maxZoom: 20 } };
+  if (p === 'esri') return { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', o: { attribution: '© Esri', maxZoom: 19, className: dark ? 'darktiles' : '' } };
+  return { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', o: { attribution: '© OpenStreetMap', maxZoom: 19, className: dark ? 'darktiles' : '' } };
+}
+function ensureMap(key) {
+  if (MAPS[key]) return MAPS[key];
+  var el = document.getElementById(key === 'mini' ? 'minimap' : 'fullmap');
+  var m = L.map(el, { zoomControl: false, attributionControl: true, dragging: key === 'full' || !L.Browser.mobile, scrollWheelZoom: key === 'full', tap: false });
+  m.setView([37.88, 23.2], 9);
+  var M = { m: m, key: key, markers: {}, nearby: L.layerGroup().addTo(m) };
+  m.attributionControl.setPrefix('');
+  var lowz = function () { el.classList.toggle('lowz', m.getZoom() < 14); };
+  m.on('zoomend', lowz); lowz();
+  if (key === 'mini') m.on('click', function () { showTab('map'); });
+  else m.on('click', function (e) {
+    if (S.sim.on && S.sim.tap) {
+      S.sim.loc = { lat: e.latlng.lat, lng: e.latlng.lng };
+      save(); hits.arrive = hits.depart = 0; detect(); maybeRoute(true); render(true); updateMaps(true);
+    }
+  });
+  MAPS[key] = M;
+  updateMaps(true);
+  return M;
+}
+function stopIcon(id, cls, label) {
+  var s = STOP_BY[id], big = cls === 'next', sz = big ? 48 : 40;
+  return L.divIcon({ className: '', iconSize: [sz, sz], iconAnchor: [sz / 2, sz + 4], html: '<div class="mk ' + cls + '"><span>' + s.emoji + '</span></div>' + (label ? '<div class="mkl' + (big ? ' keep' : '') + '" style="left:' + sz / 2 + 'px;top:' + (sz + 8) + 'px">' + esc(label) + '</div>' : '') });
+}
+function updateMaps(force) {
+  var d = derive();
+  ['mini', 'full'].forEach(function (k) {
+    var M = MAPS[k];
+    if (!M) return;
+    if (k === 'full' && ui.tab !== 'map' && !force) return;
+    var td = tileDef();
+    var tkey = td.url + (td.o.className || '');
+    if (M.tileUrl !== tkey) {
+      if (M.tiles) M.m.removeLayer(M.tiles);
+      M.tiles = L.tileLayer(td.url, td.o).addTo(M.m);
+      M.tileUrl = tkey;
+    }
+    // full itinerary (faint dashed) + live route to the next stop (bold)
+    var lg = legs && legs.key === activeOrder().join('|') ? legs.geom : null;
+    if (lg && M.legsKey !== legs.at) {
+      if (M.legs) M.m.removeLayer(M.legs);
+      M.legs = L.polyline(lg, { color: '#A63D55', weight: 3, opacity: .35, dashArray: '6 8', interactive: false }).addTo(M.m);
+      M.legsKey = legs.at;
+    } else if (!lg && M.legs) { M.m.removeLayer(M.legs); M.legs = null; M.legsKey = null; }
+    var lv = d.target && d.phase !== 'done' ? liveFor(d.target) : null;
+    var rk = lv ? lv.at + ':' + lv.to : '';
+    if (M.routeKey !== rk) {
+      if (M.route) M.m.removeLayer(M.route);
+      M.route = lv ? L.polyline(lv.geometry, { color: isDark() ? '#E07A90' : '#A63D55', weight: 6, opacity: .9, dashArray: lv.walk ? '2 10' : null, lineCap: 'round', interactive: false }).addTo(M.m) : null;
+      M.routeKey = rk;
+    }
+    S.order.forEach(function (id) {
+      var x = st(id), cls = x.skipped ? 'skip' : x.arrivedAt ? (id === d.cur && d.phase === 'at' ? 'cur' : 'done') : id === d.target ? 'next' : '';
+      var label = k === 'full' || cls === 'next' ? STOP_BY[id].name : '';
+      var sig = cls + '|' + label;
+      if (!M.markers[id]) {
+        M.markers[id] = L.marker([STOP_BY[id].lat, STOP_BY[id].lng], { icon: stopIcon(id, cls, label), zIndexOffset: cls === 'next' ? 1000 : 0 }).addTo(M.m);
+        M.markers[id].on('click', function () { if (k === 'mini') showTab('map'); else stopSheet(id); });
+        M.markers[id]._sig = sig;
+      } else if (M.markers[id]._sig !== sig) {
+        M.markers[id].setIcon(stopIcon(id, cls, label));
+        M.markers[id].setZIndexOffset(cls === 'next' ? 1000 : 0);
+        M.markers[id]._sig = sig;
+      }
+    });
+    var p = curPos();
+    if (p) {
+      if (!M.me) {
+        M.acc = L.circle([p.lat, p.lng], { radius: p.acc, color: '#2F7CF6', weight: 1, opacity: .3, fillOpacity: .08, interactive: false }).addTo(M.m);
+        M.me = L.marker([p.lat, p.lng], { icon: L.divIcon({ className: '', iconSize: [20, 20], iconAnchor: [10, 10], html: '<div class="me"></div>' }), zIndexOffset: 2000, interactive: false }).addTo(M.m);
+      } else { M.me.setLatLng([p.lat, p.lng]); M.acc.setLatLng([p.lat, p.lng]).setRadius(p.acc); }
+    } else if (M.me) { M.m.removeLayer(M.me); M.m.removeLayer(M.acc); M.me = M.acc = null; }
+  });
+  fitMini(false);
+}
+function fitMini(force) {
+  var M = MAPS.mini;
+  if (!M) return;
+  var d = derive(), p = curPos();
+  var sig = d.phase + ':' + (d.target || d.cur) + ':' + (p ? Math.round(p.lat * 100) + ',' + Math.round(p.lng * 100) : '');
+  if (!force && M.fitSig === sig) return;
+  M.fitSig = sig;
+  var pts = [], id = d.target || d.cur;
+  if (id) pts.push([STOP_BY[id].lat, STOP_BY[id].lng]);
+  if (p) pts.push([p.lat, p.lng]);
+  else if (d.cur && d.cur !== id) pts.push([STOP_BY[d.cur].lat, STOP_BY[d.cur].lng]);
+  if (pts.length === 1 || (pts.length === 2 && hv({ lat: pts[0][0], lng: pts[0][1] }, { lat: pts[1][0], lng: pts[1][1] }) < 150)) M.m.setView(pts[0], 16);
+  else if (pts.length > 1) M.m.fitBounds(pts, { padding: [40, 40], maxZoom: 16 });
+}
+function fitAll(M) {
+  if (!M) return;
+  var pts = STOPS.map(function (s) { return [s.lat, s.lng]; });
+  var p = curPos();
+  if (p) pts.push([p.lat, p.lng]);
+  M.m.fitBounds(pts, { padding: [40, 40] });
+}
+function showNearbyOnMap(focus) {
+  setTimeout(function () {
+    var M = ensureMap('full');
+    M.nearby.clearLayers();
+    var C = CAT_BY[ui.near.cat], pts = [];
+    (ui.lastPlaces || []).forEach(function (it) {
+      var mk = L.marker([it.lat, it.lng], { icon: L.divIcon({ className: '', iconSize: [30, 30], iconAnchor: [15, 15], html: '<div class="pl">' + (it.icon || C.icon) + '</div>' }) }).addTo(M.nearby);
+      mk.on('click', function () { placeSheet(it); });
+      pts.push([it.lat, it.lng]);
+    });
+    M.m.invalidateSize();
+    M.fitted = true;
+    if (focus) M.m.setView([focus.lat, focus.lng], 17);
+    else if (pts.length) { var p = curPos(); if (p) pts.push([p.lat, p.lng]); M.m.fitBounds(pts, { padding: [50, 50], maxZoom: 16 }); }
+  }, 80);
+}
+
+// ---------------------------------------------------------------------------
+// Main loop
+// ---------------------------------------------------------------------------
+var tickN = 0;
+function tick(forceSlow) {
+  var c = document.getElementById('clock');
+  if (c) c.textContent = hm(now());
+  tickN++;
+  if (forceSlow || tickN % 5 === 0) {
+    // re-check with the last fix too: a phone standing still may not send a
+    // second GPS update, and arrival needs two consecutive hits
+    var cp = curPos();
+    if (cp && Date.now() - cp.at < 120000) detect();
+    var d = derive(), pr = project(d);
+    checkNotifs(d, pr);
+    maybeRoute(false);
+    render();
+    updateMaps();
+  }
+  if (tickN % 600 === 0) { fetchWeather(false); fetchLegs(false); }
+}
+window.addEventListener('online', function () { online = true; fetchLegs(false); fetchWeather(false); maybeRoute(true); render(true); });
+window.addEventListener('offline', function () { online = false; render(true); });
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'visible') { requestWake(); tick(true); maybeRoute(true); }
+});
+if (window.matchMedia) { try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { render(true); updateMaps(true); }); } catch (e) {} }
+
+function onboarding() {
+  if (S.onboarded) return;
+  var div = document.createElement('div');
+  div.id = 'onb';
+  div.innerHTML = '<div style="font-size:44px;margin-bottom:10px">❤️</div><h1>Η σημερινή μας εκδρομή</h1>' +
+    '<p>Στεφάνι · Αρχαία Κόρινθος · Λουτράκι</p>' +
+    '<div class="why"><b>Θέλουμε την τοποθεσία σας για να σας δείχνουμε πού βρίσκεστε και ποιο είναι το επόμενο σημείο.</b><br>' +
+    '📍 πού είστε τώρα<br>🧭 πόσο απέχει η επόμενη στάση<br>⏱️ τι ώρα θα φτάσετε<br>🎉 πότε φτάσατε — αυτόματα<br>' +
+    '<span class="hint">Η θέση σας μένει μόνο στο κινητό σας.</span></div>' +
+    '<button class="btn pri" data-a="onbok">ΕΠΙΤΡΕΠΩ</button><button class="btn ghost mt2" data-a="onbskip">Όχι τώρα</button>';
+  document.body.appendChild(div);
+}
+
+(function init() {
+  var lp = store.get('trip.lastpos', null);
+  if (lp && Date.now() - lp.at < 10 * 60000) pos = lp;
+  applyTheme();
+  ensureMap('mini');
+  render(true);
+  onboarding();
+  initGeo();
+  fetchLegs(false);
+  fetchWeather(false);
+  if (S.started && !S.finished) requestWake();
+  setInterval(tick, 1000);
+  setTimeout(function () { if (MAPS.mini) MAPS.mini.m.invalidateSize(); fitMini(true); }, 200);
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js?v={{BUILD_VERSION}}').then(function (reg) { reg.update(); }).catch(function () {});
+    var refreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (refreshed) return;
+      refreshed = true;
+      window.location.reload();
+    });
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.getRegistration().then(function (reg) { if (reg) reg.update(); });
+    }
+  });
+}
+</script>
+</body>
+</html>

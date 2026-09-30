@@ -1,0 +1,12 @@
+{
+  "name": "Η σημερινή μας εκδρομή",
+  "short_name": "Εκδρομή",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F3EE",
+  "theme_color": "#F7F3EE",
+  "lang": "el",
+  "icons": [{ "src": "icon512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }]
+}
